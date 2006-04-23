@@ -44,6 +44,9 @@ def usage():
     print darkgreen("  --webrsync") + ", " + darkgreen("-w")
     print "    Use 'emerge-webrsync' instead of 'emerge sync'"
     print ""
+    print darkgreen("  --metadata") + ", " + darkgreen("-m")
+    print "    Use 'emerge --metadata' instead of 'emerge sync'"
+    print ""
     print darkgreen("  --nocolor") + ", " + darkgreen("-n")
     print "    Don't use ANSI codes for colored output"
     print ""
@@ -57,7 +60,7 @@ def usage():
     sys.exit(0)
 
 try:
-    opts = getopt(sys.argv[1:], "hwnvs", ["help", "webrsync", "nocolor", "verbose", "nospinner"])
+    opts = getopt(sys.argv[1:], "hwmnvs", ["help", "webrsync", "nocolor", "verbose", "metadata", "nospinner"])
 except GetoptError, error:
     print red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)"
     print
@@ -70,6 +73,8 @@ for a in opts[0]:
         usage()
     elif arg in ("-w", "--webrsync"):
         syncprogram = "/usr/sbin/emerge-webrsync"
+    elif arg in ("-m", "--metadata"):
+        syncprogram = "/usr/bin/emerge --metadata"
     elif arg in ("-n", "--nocolor"):
         eoptions = "-n"
         nocolor()
