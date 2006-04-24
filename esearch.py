@@ -222,7 +222,11 @@ for regex, pattern, foo, foo in regexlist:
 
                 if outputm == VERBOSE:
                     mpv = best(portdb.xmatch("match-all", pkg[1]))
-                    iuse_split = string.split(portdb.aux_get(pkg[1] + "-" +  pkg[3], ["IUSE"])[0], " ")
+                    try:
+                        iuse_split = string.split(portdb.aux_get(pkg[1] + "-" +  pkg[3], ["IUSE"])[0], " ")
+                    except KeyError, e:
+                        print "Package %s is no longer in the portage tree." % pkg[1] + "-" + pkg[3]
+                        continue
                     iuse_split.sort()
                     iuse = ""
 
