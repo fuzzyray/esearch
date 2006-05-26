@@ -22,7 +22,7 @@ from output import red, green, bold, darkgreen, nocolor, xtermTitle
 
 from common import needdbversion
 
-syncprogram =   "/usr/bin/emerge sync"
+syncprogram =   "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge sync"
 logfile_sync =  "/var/log/emerge-sync.log"
 tmp_prefix =    "/tmp/esync"
 
@@ -72,9 +72,9 @@ for a in opts[0]:
     if arg in ("-h", "--help"):
         usage()
     elif arg in ("-w", "--webrsync"):
-        syncprogram = "/usr/sbin/emerge-webrsync"
+        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" /usr/sbin/emerge-webrsync"
     elif arg in ("-m", "--metadata"):
-        syncprogram = "/usr/bin/emerge --metadata"
+        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge --metadata"
     elif arg in ("-n", "--nocolor"):
         eoptions = "-n"
         nocolor()
