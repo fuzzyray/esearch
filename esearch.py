@@ -81,7 +81,7 @@ def searchEbuilds(path, portdir = True, searchdef = ""):
         for file in list:
             if file[-7:] == ".ebuild":
                 pv = file[:-7]
-                pkgs.append(pkgsplit(pv))
+                pkgs.append([pkgsplit(pv)])
                 pkgs[-1].append(path + "/" + file)
                 if searchdef != "" and pv == searchdef:
                     defebuild = (searchdef, pkgs[-1][3])
