@@ -18,7 +18,10 @@ from getopt import *
 sys.path.insert(0, "/usr/lib/portage/pym")
 
 import portage
-from output import red, green, bold, darkgreen, nocolor, xtermTitle
+try:
+    from portage.output import red, green, bold, darkgreen, nocolor, xtermTitle
+except ImportError:
+    from output import red, green, bold, darkgreen, nocolor, xtermTitle
 
 from common import needdbversion
 
