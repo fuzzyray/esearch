@@ -20,7 +20,10 @@ sys.path.insert(0, "/usr/lib/portage/pym")
 sys.path.insert(0, "/usr/lib/esearch")
 
 import portage
-from output import red, darkgreen, green, bold, nocolor
+try:
+    from portage.output import red, darkgreen, green, bold, nocolor
+except ImportError:
+    from output import red, darkgreen, green, bold, nocolor
 
 from common import needdbversion, version
 

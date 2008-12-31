@@ -13,7 +13,10 @@ import sys
 sys.path.insert(0, "/usr/lib/portage/pym")
 sys.path.insert(0, "/usr/lib/esearch")
 
-from output import bold, red, green, darkgreen, turquoise, nocolor
+try:
+    from portage.output import bold, red, green, darkgreen, turquoise, nocolor
+except ImportError:
+    from output import bold, red, green, darkgreen, turquoise, nocolor, blue
 from os.path import exists
 import re
 
@@ -128,7 +131,10 @@ for a in opts[0]:
     elif arg in ("-v", "--verbose"):
         import string
         from portage import portdb, best, settings
-        from output import blue
+        try:
+            from portage.output import blue
+        except ImportError:
+            from output import blue
         from common import version
         outputm = VERBOSE
     elif arg in ("-e", "--ebuild"):
