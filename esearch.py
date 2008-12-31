@@ -67,6 +67,9 @@ def error(msg, fatal = True):
     if fatal:
         sys.exit(1)
 
+def mypkgcmp(pkg1, pkg2):
+	return pkgcmp(pkg1[:3], pkg2[:3])
+
 def searchEbuilds(path, portdir = True, searchdef = "", repo_num = ""):
     global ebuilds, output, defebuild, found_in_overlay
     pv = ""
@@ -79,18 +82,18 @@ def searchEbuilds(path, portdir = True, searchdef = "", repo_num = ""):
         rep = red("Overlay "+str(repo_num)+"  ")
 
     if isdir(path):
-        list = listdir(path)
+        filelist = listdir(path)
 
-        for file in list:
+        for file in filelist:
             if file[-7:] == ".ebuild":
                 pv = file[:-7]
-                pkgs.append(pkgsplit(pv))
+                pkgs.append(list(pkgsplit(pv)))
                 pkgs[-1].append(path + file)
                 if searchdef != "" and pv == searchdef:
                     defebuild = (searchdef, pkgs[-1][3])
 		if not portdir:
 		    found_in_overlay = True
-        pkgs.sort(pkgcmp)
+        pkgs.sort(mypkgcmp)
         for pkg in pkgs:
             rev = ""
             if pkg[2] != "r0":
