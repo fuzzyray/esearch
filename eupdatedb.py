@@ -9,6 +9,7 @@
 from time import time
 start = time()
 
+import os
 import sys
 import re
 from os import stat, unlink, environ, open, fdopen, O_RDONLY, O_EXCL, O_CREAT, O_WRONLY
@@ -22,8 +23,12 @@ sys.path.insert(0, "/usr/lib/esearch")
 import portage
 try:
     from portage.output import red, darkgreen, green, bold, nocolor
+    from portage.manifest import Manifest
+    from portage.exception import PortageException
 except ImportError:
     from output import red, darkgreen, green, bold, nocolor
+    from portage_manifest import Manifest
+    from portage_exception import PortageException
 
 from common import needdbversion, version
 
@@ -66,14 +71,15 @@ def duration(start):
 def getfs(pkg):
     # from /usr/bin/emerge
     try:
-        mysum = 0
-        mydigest = portage.portdb.finddigest(pkg)
-
-        myfilefd = open(mydigest, O_RDONLY)
-        myfile = fdopen(myfilefd, "r")
-        for line in myfile.readlines():
-            mysum += int(line.split(" ")[3])
-        myfile.close()
+        myebuild = portage.portdb.findname(pkg)
+        pkgdir = os.path.dirname(myebuild)
+        mf = Manifest(pkgdir, portage.settings["DISTDIR"])
+        if hasattr(portage.portdb, "getFetchMap"):
+            fetchlist = portage.portdb.getFetchMap(pkg)
+        else:
+            fetchlist = portage.portdb.getfetchlist(pkg,
+                mysettings=portage.settings, all=True)[1]
+        mysum = mf.getDistfilesSize(fetchlist)
         mystr = str(mysum/1024)
         mycount = len(mystr)
         while (mycount > 3):
@@ -82,7 +88,7 @@ def getfs(pkg):
         mysum = mystr + " kB"
 
         return mysum
-    except:
+    except (PortageException, KeyError):
         return "[no/bad digest]"
 
 try:
