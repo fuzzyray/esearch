@@ -25,7 +25,7 @@ except ImportError:
 
 from common import needdbversion
 
-syncprogram =   "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge sync"
+syncprogram =   "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge --sync"
 logfile_sync =  "/var/log/emerge-sync.log"
 tmp_prefix =    "/tmp/esync"
 
@@ -45,10 +45,10 @@ def usage():
     print "    Print this help message"
     print ""
     print darkgreen("  --webrsync") + ", " + darkgreen("-w")
-    print "    Use 'emerge-webrsync' instead of 'emerge sync'"
+    print "    Use 'emerge-webrsync' instead of 'emerge --sync'"
     print ""
     print darkgreen("  --metadata") + ", " + darkgreen("-m")
-    print "    Use 'emerge --metadata' instead of 'emerge sync'"
+    print "    Use 'emerge --metadata' instead of 'emerge --sync'"
     print ""
     print darkgreen("  --nocolor") + ", " + darkgreen("-n")
     print "    Don't use ANSI codes for colored output"

@@ -1,16 +1,16 @@
 .TH esearch 1 "February 13, 2005" "esync"
 
 .SH "NAME"
-esync \- Calls 'emerge sync' and 'eupdatedb' and shows updates
+esync \- Calls 'emerge --sync' and 'eupdatedb' and shows updates
 
 .SH "SYNOPSIS"
 .B esync
 [ options ]
 
 .SH "DESCRIPTION"
-esync first imports the old esearch index, then calls 'emerge sync'
-or 'emerge-webrsync' and 'eupdatedb'. Then it shows the new and the
-updated packages.
+esync first imports the old esearch index, then calls 'emerge --sync'
+(or an alternative command: see options) and 'eupdatedb'. Then it
+shows the new and the updated packages.
 
 .SH "OPTIONS"
 .TP
@@ -18,10 +18,10 @@ updated packages.
 Print help message
 .TP
 .B \-\-webrsync, \-w
-Use 'emerge-webrsync' instead of 'emerge sync'
+Use 'emerge-webrsync' instead of 'emerge --sync'
 .TP
 .B \-\-metadata, \-m
-Use 'emerge --metadata' instead of 'emerge sync'
+Use 'emerge --metadata' instead of 'emerge --sync'
 .TP
 .B \-\-nocolor, \-n
 Don't use ANSI codes for colored output
