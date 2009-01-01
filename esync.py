@@ -35,6 +35,7 @@ eoptions = ""
 eupdatedb_extra_options = ""
 showtitles = "notitles" not in portage.features
 verbose = False
+quiet = False
 
 def usage():
     print "esync (0.7.1) - Calls 'emerge sync' and 'eupdatedb' and shows updates"
@@ -53,6 +54,9 @@ def usage():
     print darkgreen("  --nocolor") + ", " + darkgreen("-n")
     print "    Don't use ANSI codes for colored output"
     print ""
+    print darkgreen("  --quiet") + ", " + darkgreen("-q")
+    print "    Less output (implies --nospinner)"
+    print ""
     print darkgreen("  --verbose") + ", " + darkgreen("-v")
     print "    Verbose output"
     print ""
@@ -63,7 +67,7 @@ def usage():
     sys.exit(0)
 
 try:
-    opts = getopt(sys.argv[1:], "hwmnvs", ["help", "webrsync", "nocolor", "verbose", "metadata", "nospinner"])
+    opts = getopt(sys.argv[1:], "hwmnvs", ["help", "webrsync", "nocolor", "quiet", "verbose", "metadata", "nospinner"])
 except GetoptError, error:
     print red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)"
     print
@@ -82,8 +86,13 @@ for a in opts[0]:
         eoptions = "-n"
         nocolor()
         showtitles = False
+    elif arg in ("-q", "--quiet"):
+        eupdatedb_extra_options = "-q"
+        quiet = True
+        verbose = False
     elif arg in ("-v", "--verbose"):
         verbose = True
+        quiet = False
     elif arg in ("-s", "--nospinner"):
         eupdatedb_extra_options = "-q"
 
@@ -92,6 +101,7 @@ def emsg(msg):
     global showtitles
     if showtitles:
         xtermTitle(msg)
+    if quiet: return
     print green(" *"), msg
 
 def outofdateerror():
@@ -131,9 +141,9 @@ def gettree(tree):
 
 tree_old = gettree("old")
 
-emsg("Doing '" + syncprogram + "' now")
+if not quiet: emsg("Doing '" + syncprogram + "' now")
 
-if verbose == True:
+if verbose:
     errorcode = os.system(syncprogram + " | tee " + logfile_sync + " 2>&1")
 else:
     errorcode = os.system(syncprogram + " > " + logfile_sync + " 2>&1")
@@ -143,16 +153,17 @@ if errorcode != 0:
     print ""
     sys.exit(1)
 
-print ""
+if not quiet:
+    print ""
+    emsg("Doing 'eupdatedb' now")
+    print ""
 
-emsg("Doing 'eupdatedb' now")
-print ""
 if os.system("/usr/sbin/eupdatedb " + eoptions + " " + eupdatedb_extra_options) != 0:
     print ""
     print red(" * Error:"), "eupdatedb failed"
     sys.exit(1)
 
-print ""
+if not quiet: print ""
 
 tree_new = gettree("new")
 
@@ -181,6 +192,7 @@ for (pkg, version) in items:
     if (pkg not in old_keys) or (old[pkg] != new[pkg]):
         os.system("/usr/bin/esearch " + eoptions + " -Fc ^" + pkg + "$ | head -n1")
         haspkg = True
+        break
 
 if not haspkg:
     emsg("No updates found")
