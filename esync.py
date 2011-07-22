@@ -48,6 +48,9 @@ def usage():
     print darkgreen("  --webrsync") + ", " + darkgreen("-w")
     print "    Use 'emerge-webrsync' instead of 'emerge --sync'"
     print ""
+    print darkgreen("  --delta-webrsync") + ", " + darkgreen("-d")
+    print "    Use 'emerge-delta-webrsync' instead of 'emerge --sync'"
+    print ""
     print darkgreen("  --metadata") + ", " + darkgreen("-m")
     print "    Use 'emerge --metadata' instead of 'emerge --sync'"
     print ""
@@ -67,7 +70,7 @@ def usage():
     sys.exit(0)
 
 try:
-    opts = getopt(sys.argv[1:], "hwmnvs", ["help", "webrsync", "nocolor", "quiet", "verbose", "metadata", "nospinner"])
+    opts = getopt(sys.argv[1:], "hwdmnvs", ["help", "webrsync", "delta-webrsync", "nocolor", "verbose", "metadata", "nospinner"])
 except GetoptError, error:
     print red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)"
     print
@@ -80,6 +83,8 @@ for a in opts[0]:
         usage()
     elif arg in ("-w", "--webrsync"):
         syncprogram = "EMERGE_DEFAULT_OPTS=\"\" /usr/sbin/emerge-webrsync"
+    elif arg in ("-d", "--delta-webrsync"):
+        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge-delta-webrsync -u"
     elif arg in ("-m", "--metadata"):
         syncprogram = "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge --metadata"
     elif arg in ("-n", "--nocolor"):
