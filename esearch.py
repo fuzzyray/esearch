@@ -41,6 +41,9 @@ def usage():
     print darkgreen("  --instonly") + ", " + darkgreen("-I")
     print "    Find only packages which are installed"
     print ""
+    print darkgreen("  --notinst") + ", " + darkgreen("-N")
+    print "    Find only packages which are not installed"
+    print ""
     print darkgreen("  --compact") + ", " + darkgreen("-c")
     print "    More compact output format"
     print ""
@@ -113,10 +116,11 @@ searchdesc = False
 fullname =   False
 pattern =    False
 instonly =   False
+notinst =    False
 found_in_overlay = False
 
 try:
-    opts = getopt(sys.argv[1:], "hSFIcveo:d:n", ["help", "searchdesc", "fullname", "instonly", "compact", "verbose", "ebuild", "own=", "directory=", "nocolor"])
+    opts = getopt(sys.argv[1:], "hSFINcveo:d:n", ["help", "searchdesc", "fullname", "instonly", "notinst", "compact", "verbose", "ebuild", "own=", "directory=", "nocolor"])
 except GetoptError, errmsg:
     error(str(errmsg) + " (see " + darkgreen("--help") + " for all options)")
 
@@ -129,6 +133,8 @@ for a in opts[0]:
         fullname = True
     elif arg in ("-I", "--instonly"):
         instonly = True
+    elif arg in ("-N", "--notinst"):
+        notinst = True
     elif arg in ("-c", "--compact"):
         outputm = COMPACT
     elif arg in ("-v", "--verbose"):
@@ -206,6 +212,8 @@ for regex, pattern, foo, foo in regexlist:
         found = False
 
         if instonly and not pkg[4]:
+            continue
+        elif notinst and pkg[4]:
             continue
 
         if fullname and regex.search(pkg[1]):
