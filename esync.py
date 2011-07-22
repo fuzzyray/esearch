@@ -197,7 +197,6 @@ for (pkg, version) in items:
     if (pkg not in old_keys) or (old[pkg] != new[pkg]):
         os.system("/usr/bin/esearch " + eoptions + " -Fc ^" + pkg + "$ | head -n1")
         haspkg = True
-        break
 
 if not haspkg:
     emsg("No updates found")
