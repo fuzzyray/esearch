@@ -25,7 +25,7 @@ except ImportError:
 
 from common import needdbversion
 
-syncprogram =   "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge --sync"
+syncprogram =   "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge sync"
 logfile_sync =  "/var/log/emerge-sync.log"
 tmp_prefix =    "/tmp/esync"
 
