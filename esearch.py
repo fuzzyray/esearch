@@ -13,10 +13,7 @@ import sys
 sys.path.insert(0, "/usr/lib/portage/pym")
 sys.path.insert(0, "/usr/lib/esearch")
 
-try:
-    from portage.output import bold, red, green, darkgreen, turquoise, nocolor
-except ImportError:
-    from output import bold, red, green, darkgreen, turquoise, nocolor
+from output import bold, red, green, darkgreen, turquoise, nocolor
 from os.path import exists
 import re
 
