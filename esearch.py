@@ -198,7 +198,11 @@ for pattern in patterns:
         pattern = ".*"
     else:
         pattern = re.sub("\+\+", "\+\+", pattern)
-    regexlist.append([re.compile(pattern, re.IGNORECASE), pattern, "", 0])
+    try:
+        regexlist.append([re.compile(pattern, re.IGNORECASE), pattern, "", 0])
+    except re.error:
+        error("Invalid regular expression.")
+        sys.exit(1)
 
 # Could also loop through all packages only once, and remember which
 # regex from regexlist has matched this package, and then build the output
