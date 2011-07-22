@@ -1,0 +1,94 @@
+.TH esearch 1 "08 Luglio 2004" "esearch"
+
+.SH "NOME"
+esearch \- alternativa a 'emerge search' con indice di ricerca
+
+.SH "SINTASSI"
+.B esearch
+[ opzioni ] <pattern>
+
+.SH "DESCRIZIONE"
+esearch e` un piccolo script che si comporta esattamente come emerge \-s e 
+rispettivamente emerge \-S. Il vantaggio di esearch rispetto ad emerge e`
+l'uso di un indice di ricerca. E` molto piu` veloce di emerge \-s/\-S.
+
+.SH "OPZIONI"
+.TP
+.B \-\-help, \-h
+Stampa un messaggio di aiuto
+.TP
+.B \-\-searchdesc, \-S
+Cerca anche nella descrizione del pacchetto.
+.TP
+.B \-\-fullname, \-F
+Cerca il nome completo del pacchetto(includendo la categoria).
+.TP
+.B \-\-compact, \-c
+Stampa in modo piu` compatto.
+.TP
+.B \-\-ebuild, \-e
+Mostra le ebuilds dei pacchetti trovati.
+.TP
+.B \-\-own=format, \-o format
+Stampa in formato definito dall'utente,
+.B format
+e` una stringa che puo` contenere caratteri speciali,
+si veda la sezione FORMATO per i dettagli
+.TP
+.B \-\-directory=dir, \-d dir
+Usa la direcotry dir per l'indice di esearch
+.TP
+.B \-\-nocolor, \-n
+Non usa i codici colore ANSI per la stampa
+
+.SH "FORMATO"
+.TP
+.B %c
+categoria
+.TP
+.B %n
+nome del pacchetto
+.TP
+.B %p
+equivalente a "%c/%n"
+.TP
+.B %m
+"masked" se un pacchetto e` mascherato, altrimenti ""
+.TP
+.B %va
+ultima versione disponibile
+.TP
+.B %vi
+ultima versione installata, o ""
+.TP
+.B %s
+dimensione dei file da scaricare
+.TP
+.B %h
+Homepage
+.TP
+.B %d
+Descrizione
+.TP
+.B %l
+Licenza
+
+.SH "ESEMPI"
+.TP
+\f(CWesearch -o "/usr/portage/%p/ChangeLog\\n" ^pacchetto$\fP
+Stampa il percorso corrente per il file ChangeLog di 'pacchetto'.
+.TP
+\f(CWesearch -o "%n-%va.ebuild\\n" pattern\fP
+Stampa i nomi dei file ebuild attuali.
+.TP
+\f(CWesearch -o "%p\\n" ^ > package-list\fP
+Genera una lista di tutti i pacchetti disponibili.
+
+.SH "VEDI ANCHE"
+eupdatedb(1), esync(1), emerge(1)
+
+.SH "BUGS"
+Nessun bug noto
+
+.SH "AUTORE"
+David Peter <davidpeter@web.de>

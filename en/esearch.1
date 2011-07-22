@@ -1,0 +1,100 @@
+.TH esearch 1 "February 13, 2005" "esearch"
+
+.SH "NAME"
+esearch \- replacement for 'emerge search' with search-index
+
+.SH "SYNOPSIS"
+.B esearch
+[ options ] <pattern>
+
+.SH "DESCRIPTION"
+esearch is a small script which behaves exactly like emerge \-s resp.
+emerge \-S. The advantage of esearch over emerge is the search index
+it uses. It is a lot faster than emerge \-s/\-S.
+
+.SH "OPTIONS"
+.TP
+.B \-\-help, \-h
+Print help message
+.TP
+.B \-\-searchdesc, \-S
+Search package descriptions as well
+.TP
+.B \-\-fullname, \-F
+Search packages full name (includes category)
+.TP
+.B \-\-instonly, \-I
+Find only packages which are installed
+.TP
+.B \-\-compact, \-c
+More compact output format
+.TP
+.B \-\-verbose, \-v
+Give a lot of additional information (slow!)
+.TP
+.B \-\-ebuild, \-e
+View ebuilds of found packages
+.TP
+.B \-\-own=format, \-o format
+Use user-defined output format,
+.B format
+is a string which may contain special characters,
+see FORMAT section for details
+.TP
+.B \-\-directory=dir, \-d dir
+Use dir to store esearch index
+.TP
+.B \-\-nocolor, \-n
+Don't use ANSI codes for colored output
+
+.SH "FORMAT"
+.TP
+.B %c
+category
+.TP
+.B %n
+package name
+.TP
+.B %p
+same as "%c/%n"
+.TP
+.B %m
+"masked" if package is masked, otherwise ""
+.TP
+.B %va
+latest version available
+.TP
+.B %vi
+latest version installed, or ""
+.TP
+.B %s
+size of downloaded files
+.TP
+.B %h
+Homepage
+.TP
+.B %d
+Description
+.TP
+.B %l
+License
+
+.SH "EXAMPLES"
+.TP
+\f(CWesearch -o "/usr/portage/%p/ChangeLog\\n" ^package$\fP
+Print the correct path to the ChangeLog file of 'package'.
+.TP
+\f(CWesearch -o "%n-%va.ebuild\\n" pattern\fP
+Print the names of the current ebuild files.
+.TP
+\f(CWesearch -o "%p\\n" ^ > package-list\fP
+Generate a list of all available packages.
+
+.SH "SEE ALSO"
+eupdatedb(1), esync(1), emerge(1)
+
+.SH "BUGS"
+No known bugs
+
+.SH "AUTHOR"
+David Peter <davidpeter@web.de>

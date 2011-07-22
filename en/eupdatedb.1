@@ -1,0 +1,38 @@
+.TH esearch 1 "February 13, 2005" "eupdatedb"
+
+.SH "NAME"
+esearch \- Update the search-index for esearch
+
+.SH "SYNOPSIS"
+.B eupdatedb
+[ options ]
+
+.SH "DESCRIPTION"
+eupdatedb generates the index file for esearch. You have
+to call eupdatedb to keep your search results up to date.
+
+.SH "OPTIONS"
+.TP
+.B \-\-help, \-h
+Print help message
+.TP
+.B \-\-verbose, \-v
+Verbose mode, show categories
+.TP
+.B \-\-quiet, \-q
+Print only summary
+.TP
+.B \-\-directory=dir, \-d dir
+Load esearch index from dir
+.TP
+.B \-\-nocolor, \-n
+Don't use ANSI codes for colored output
+
+.SH "SEE ALSO"
+esearch(1), esync(1), emerge(1)
+
+.SH "BUGS"
+No known bugs
+
+.SH "AUTHOR"
+David Peter <davidpeter@web.de>

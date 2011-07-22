@@ -1,0 +1,38 @@
+.TH esearch 1 "08 Luglio 2004" "esearch"
+
+.SH "NOME"
+esearch \- Aggiorna l'indice di ricerca per esearch
+
+.SH "SINTASSI"
+.B eupdatedb
+[ opzioni ]
+
+.SH "DESCRIZIONE"
+eupdatedb genera il file di indice per esearch. E` necessario eseguire
+eupdatedb per far si che i risultati delle ricerche siano aggiornati.
+
+.SH "OPZIONI"
+.TP
+.B \-\-help, \-h
+Stampa un messaggio di aiuto
+.TP
+.B \-\-verbose, \-v
+Modalita` dettagliata, mostra le categorie
+.TP
+.B \-\-quiet, \-q
+Stampa solo il sommario
+.TP
+.B \-\-directory=dir, \-d dir
+Carica l'indice di esearch dalla directory dir
+.TP
+.B \-\-nocolor, \-n
+Non usa i codici colore ANSI per la stampa
+
+.SH "VEDI ANCHE"
+esearch(1), esync(1), emerge(1)
+
+.SH "BUGS"
+Nessun bug noto.
+
+.SH "AUTORE"
+David Peter <davidpeter@web.de>

@@ -1,0 +1,39 @@
+.TH esearch 1 "February 13, 2005" "esync"
+
+.SH "NAME"
+esync \- Calls 'emerge sync' and 'eupdatedb' and shows updates
+
+.SH "SYNOPSIS"
+.B esync
+[ options ]
+
+.SH "DESCRIPTION"
+esync first imports the old esearch index, then calls 'emerge sync'
+or 'emerge-webrsync' and 'eupdatedb'. Then it shows the new and the
+updated packages.
+
+.SH "OPTIONS"
+.TP
+.B \-\-help, \-h
+Print help message
+.TP
+.B \-\-webrsync, \-w
+Use 'emerge-webrsync' instead of 'emerge sync'
+.TP
+.B \-\-nocolor, \-n
+Don't use ANSI codes for colored output
+.TP
+.B \-\-verbose, \-v
+Verbose output
+.TP
+.B \-\-nospinner, \­s
+Don't display the remaining index count
+
+.SH "SEE ALSO"
+esearch(1), eupdatedb(1), emerge(1)
+
+.SH "BUGS"
+No known bugs
+
+.SH "AUTHOR"
+David Peter <davidpeter@web.de>

@@ -1,0 +1,36 @@
+.TH esearch 1 "08 Luglio 2004" "esearch"
+
+.SH "NOME"
+esync \- Esegue 'emerge sync' e 'eupdatedb' mostrando gli aggiornamenti
+
+.SH "SINTASSI"
+.B esync
+[ opzioni ]
+
+.SH "DESCRIZIONE"
+esync prima importa il vecchio indice di esearch, quindi esegue
+'emerge sync' o 'emerge-webrsync' e 'eupdatedb'. Quindi mostra i
+nuovi pacchetti e quelli aggiornati.
+
+.SH "OPZIONI"
+.TP
+.B \-\-help, \-h
+Stampa un messaggio di aiuto.
+.TP
+.B \-\-webrsync, \-w
+Usa 'emerge-webrsync' invece di 'emerge sync'.
+.TP
+.B \-\-nocolor, \-n
+Non usa i codici colore ANSI per la stampa.
+.TP
+.B \-\-verbose, \-v
+Stampa dettagliata.
+
+.SH "VEDI ANCHE"
+esearch(1), eupdatedb(1), emerge(1)
+
+.SH "BUGS"
+Nessun bug noto.
+
+.SH "AUTORE"
+David Peter <davidpeter@web.de>

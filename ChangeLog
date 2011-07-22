@@ -1,0 +1,242 @@
+*esearch-0.7.1 (13 Feb 2005)
+
+  13 Feb 2005; David Peter <davidpeter@web.de> esearch.py:
+  Added patch from Saleem Abdulrasool <compnerd@compnerd.org>,
+  which prevents a traceback if you pipe the output of esync to
+  another program and terminate the process prematurely.
+
+  13 Feb 2005; David Peter <davidpeter@web.de> en/esearch.1:
+  Updated manpages. (Fixes #66724)
+
+  13 Feb 2005; David Peter <davidpeter@web.de> esync.py:
+  Added patch from <fn_x@hotmail.com>, which fixes #76042.
+
+  06 Jan 2005; David Peter <davidpeter@web.de> esync.py:
+  Sort alphabetically by category/pkgname, not by pkgname only.
+
+*esearch-0.7 (26 Sep 2004)
+
+  26 Sep 2004; David Peter <davidpeter@web.de> esearch.py:
+  Added patch from Steve Acheson <satch@employees.org>, which
+  adds an -I/--instonly option to esearch. If it is enabled,
+  only packages which are installed will be found.
+
+  26 Sep 2004; David Peter <davidpeter@web.de> esearch.py:
+  Added patch from Fernando Altomare Serboncini <fserb@fserb.com.br>,
+  which changes the behaviour of 'esearch -c': Now it
+  prints the category also.
+
+  15 Sep 2004; David Peter <davidpeter@web.de> eupdatedb.py:
+  Fixed bug #58399. Sometimes python doesn't compile the eupdatedb
+  index for any reasons.
+
+  15 Sep 2004; David Peter <davidpeter@web.de> it/esearch.1,
+  it/eupdatedb.1, it/esync.1:
+  Added the italian manpages created by Sandro Bonazzola
+  <sandrobonazzola@users.sourceforge.net>, thanks a lot.
+
+  15 Sep 2004; David Peter <davidpeter@web.de> esync.py:
+  Added a patch from Thomas Buntrock
+  <buntrock@sec.informatik.tu-darmstadt.de>, which adds
+  a -s/--nospinner option to esync. (Fixes #57030)
+
+  17 Aug 2004; David Peter <davidpeter@web.de> esearch.py:
+  Added a -v/--verbose option to esearch, which shows some
+  additional information about a package. Used some code
+  from Carlos Silva <r3pek@r3pek.homelinux.org>, who wrote
+  a patch for emerge (#11739). Thanks!
+
+  17 Aug 2004; David Peter <davidpeter@web.de> esearch.py,
+  eupdatedb.py, esync.py:
+  Various small code cleanups.
+
+*esearch-0.6.3 (25 Jul 2004)
+
+  08 Jul 2004; David Peter <davidpeter@web.de> esync.py:
+  Sort the ebuilds by version (using portage.pkgcmp).
+
+  08 Jul 2004; David Peter <davidpeter@web.de> esearch.1,
+  eupdatedb.1, esync.1:
+  Added manpages for eupdatedb and esync and updated the one
+  for esearch.
+
+  08 Jul 2004; David Peter <davidpeter@web.de> eupdatedb.py,
+  esearch.py, esync.py:
+  Added a 'dbversion' to the esearch index, to be sure it is
+  not outdated.
+
+  06 Jul 2004; David Peter <davidpeter@web.de> eupdatedb.py,
+  esearch.py:
+  Added the "License" field to the index and the output of
+  esearch.
+
+  06 Jul 2004; David Peter <davidpeter@web.de> eupdatedb.py:
+  Updated file handling, so there are no "bad digests"
+  anymore. Thanks to Danilo, and the other guys from
+  the italian forums.
+
+*esearch-0.6.2 (30 Jun 2004)
+
+  30 Jun 2004; David Peter <davidpeter@web.de> eupdatedb.py:
+  Patch from Tavis Ormandy <taviso@gentoo.org> which fixes
+  a security hole in the temp file handling.
+
+  16 May 2004; David Peter <davidpeter@web.de> esync.py:
+  Patch from Roman Kreisel <roman.kreisel@web.de>, which
+  adds a -v/--verbose option to esync. With -v enabled
+  esync shows the output from 'emerge sync'.
+
+*esearch-0.6.1 (10 May 2004)
+
+  10 May 2004; David Peter <davidpeter@web.de> esync.py:
+  Showing current action in xterm title.
+
+  02 May 2004; David Peter <davidpeter@web.de> esync.py:
+  Added message, in case there are no updates.
+
+  03 Apr 2004; David Peter <davidpeter@web.de> esync.py:
+  Sort updated packages in output.
+
+  28 Mar 2004; David Peter <davidpeter@web.de> esync.py:
+  Support for emerge-webrsync (--webrsync/-w).
+
+  28 Mar 2004; David Peter <davidpeter@web.de> esync.py:
+  Added getopt including --help/-h, --nocolor/-n. Now also checking
+  if eupdatedb was successful.
+
+  15 Feb 2004; David Peter <davidpeter@web.de> esync.py:
+  use `/usr/sbin/eupdatedb` instead of `eupdatedb`, this
+  fixes #41554.
+
+  08 Feb 2004; David Peter <davidpeter@web.de> esearch.py:
+  corrected typo (fixes #40832).
+
+*esearch-0.6 (06 Feb 2004)
+
+  04 Feb 2004; David Peter <davidpeter@web.de> esync.py:
+  Small bugfix in esync: test if esearchdb exists.
+
+  25 Jan 2004; David Peter <davidpeter@web.de> esearch.py,
+  eupdatedb.py, esync.py:
+  Added descriptions on the beginning to all three files.
+
+  25 Jan 2004; David Peter <davidpeter@web.de> eupdatedb.py:
+  Added a warning, if ACCEPT_KEYWORDS is set in environment,
+  because this will result in a modified index file.
+
+  25 Jan 2004; David Peter <davidpeter@web.de> eupdatedb.py:
+  Test on startup, if there is already another eupdatedb process
+  running, thanks to Marius Mauch <genone@gentoo.org>.
+
+  25 Jan 2004; David Peter <davidpeter@web.de> esync.py:
+  Fixed traceback in esync, in case /tmp/esync(old|new)tree.pyc
+  already existed. (Fixes #39629)
+
+  22 Jan 2004; David Peter <davidpeter@web.de> esearch.py, eupdatedb.py:
+  New -d/--directory option for both, esearch and eupdatedb, to store the
+  esearch index in an other directory than /var/cache/edb/.
+
+  22 Jan 2004; David Peter <davidpeter@web.de> esearch.py:
+  When using `esearch -e ^package$`, esearch now shows the
+  available version as default ebuild, so you just have to
+  press enter.
+
+  22 Jan 2004; David Peter <davidpeter@web.de> esearch.py:
+  KeyboardInterrupt handling for `esearch -e`.
+
+*esearch-0.5.3 (11 Jan 2004)
+
+  11 Jan 2004; David Peter <davidpeter@web.de> eupdatedb.py:
+  Added KeyboardInterrupt handling.
+
+  11 Jan 2004; David Peter <davidpeter@web.de> esearch.py, eupdatedb.py:
+  sys.path work-around for portage python modules.
+
+  11 Jan 2004; David Peter <davidpeter@web.de> esync.py:
+  Added esync, a script which does `emerge sync` followed by
+  a `eupdatedb` and then shows the updates during the sync.
+
+  13 Dec 2003; David Peter <davidpeter@web.de> esearch.py:
+  Added a patch from Lars Gustäbel <lars@gustaebel.de> which speeds
+  up the esearch output method for large datasets a lot.
+
+  11 Dec 2003; David Peter <davidpeter@web.de> esearch.py:
+  Changed colors in compact mode a bit to fit the behaviour
+  of emerge: update [U] and version are now in turquoise.
+
+*esearch-0.5.2 (20 Oct 2003)
+
+  14 Nov 2003; David Peter <davidpeter@web.de> esearch.py:
+  Added --own=format/-o format to use a user-defined output
+  format. See manpage for details and examples.
+
+  13 Nov 2003; David Peter <davidpeter@web.de> eupdatedb.py:
+  Added --quiet/-q mode to show only the summary of the eupdatedb
+  output. fixes bug #32853 (http://bugs.gentoo.org/show_bug.cgi?id=32853).
+
+  13 Nov 2003; David Peter <davidpeter@web.de> esearch.py:
+  Added support for multiple search patterns.
+
+*esearch-0.5.1 (23 Oct 2003)
+
+  21 Oct 2003; David Peter <davidpeter@web.de> esearch.1:
+  Added manpage esearch.1 to esearch.
+
+  21 Oct 2003; David Peter <davidpeter@web.de> eupdatedb.py:
+  Fixed small countdown bug, eupdatedb wasn't counting to zero
+  because of invalid ebuilds.
+
+  20 Oct 2003; David Peter <davidpeter@web.de> esearch.py:
+  Fixed bug, ebuilds are now sorted properly.
+
+*esearch-0.5 (19 Oct 2003)
+
+  19 Oct 2003; David Peter <davidpeter@web.de> eupdatedb.py:
+  Added getopt support. --nocolor/-n and --verbose/-v to show categories
+  while updating index.
+
+  18 Oct 2003; David Peter <davidpeter@web.de> esearch.py:
+  Added --ebuild/-e option to view ebuilds of found packages. Inspired
+  by http://forums.gentoo.org/viewtopic.php?t=93334.
+
+  18 Oct 2003; David Peter <davidpeter@web.de> esearch.py, eupdatedb.py:
+  Changed header, so it should work with every python version.
+
+*esearch-0.4.2 (02 Oct 2003)
+
+  02 Oct 2003; David Peter <davidpeter@web.de> eupdatedb.py:
+  replaced the counter (0 to 100 percent) by an ebuild-countdown,
+  because the display was often wrong.
+
+  02 Oct 2003; David Peter <davidpeter@web.de> eupdatedb.py:
+  fixed bug #30171 (http://bugs.gentoo.org/show_bug.cgi?id=30171)
+
+*esearch-0.4.1 (30 Sep 2003)
+
+  29 Sep 2003; David Peter <davidpeter@web.de> eupdatedb.py:
+  write data into tempfile first, so esearch can be used while updating
+  esearchdb
+
+  29 Sep 2003; David Peter <davidpeter@web.de> esearch.py:
+  Added getopt support
+
+  29 Sep 2003; David Peter <davidpeter@web.de> eupdatedb.py:
+  Fixed small bug, eupdatedb sometimes showed 101% while indexing ebuilds
+
+  28 Sep 2003; David Peter <davidpeter@web.de> esearch.py:
+  Added patch from Eldad Zack <eldad@magniv.com> to allow searching for
+  full names (e.g. app-portage/esearch)
+
+*esearch-0.4 (18 Sep 2003)
+
+  18 Sep 2003; David Peter <davidpeter@web.de> eupdatedb.py:
+  no longer writing into memory, but directly into file => speedup
+
+  18 Sep 2003; David Peter <davidpeter@web.de> esearch.py:
+  added colored help-message
+
+*esearch-0.3.1 (17 Sep 2003)
+
+  17 Sep 2003; David Peter <davidpeter@web.de> esearch.py:
+  added feature which fixes wrong regexps (e.g. mysql++ -> mysql\+\+)
+
