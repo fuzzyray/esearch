@@ -1,0 +1,39 @@
+.TH esearch 1 "Février 13, 2005" "esearch"
+
+.SH NOM
+esearch \- Remplace 'emerge search' et utilise search-index
+
+.SH SYNOPSIS
+.B
+[Options] <motif>
+
+.SH DESCRIPTION
+esearch se comporte comme emerge \-s. et emerge \-S. Il utilise search-index et de ce fait plus rapide.
+
+.SH OPTIONS
+.TP
+.B \-\-help, \-h
+aide
+.TP
+.B \-\-searchdesc, \-S
+Affiche la description des paquetages
+.TP
+.B \-\-fullname, \-F
+Recherche des paquetages correspondants au nom complet (ainsi que sa catégorie)
+.TP
+.B \-\-instonly, \-I
+Rechercher les paquetages installés
+.TP
+.B \-\-compact, \-c
+Mode succinct
+.TP
+.B \-\-verbose, \-v
+Mode verbeux (lent!)
+.TP
+.B \-\-ebuild, \-e
+Affiche les ebuilds des paquetages trouvés
+.TP
+.B \-\-own=format, \-o format
+Affiche le format défini par l'utilisateur,
+.B Format
+définit une chaîne de caractères standards ou spéciaux, voir la section FORMAT pour plus de détails

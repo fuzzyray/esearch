@@ -1,0 +1,38 @@
+.TH esearch 1 "Février 13, 2005" "esync"
+.SH "NOM"
+esync \ - Appelle 'emerge sync' et 'eupdatedb' et affiche les mises à jour
+
+.SH "SYNOPSIS"
+.B esync
+[Options]
+
+.SH "DESCRIPTION"
+esync importe l'ancienne base de données d'indexation et appelle 'emerge sync'
+ou 'emerge-webrsync' puis 'eupdatedb'. Ensuite il affiche les nouveaux
+paquetages ainsi que les mises à jour.
+
+.SH "OPTIONS"
+.TP
+.B \-\-help, \-h
+aide
+.TP
+.B \-\-webrsync, \-w
+Utilise 'emerge-webrsync' au lieu de 'emerge sync'
+.TP
+.B \-\-nocolor, \-n
+N'utilise pas de codes ANSI pour la sortie
+.TP
+.B \-\-verbose, \-v
+Mode verbeux
+.TP
+.B \-\-nospinner, \-s
+N'affiche pas le compteur
+
+.SH "VOIR AUSSI"
+esearch(1), eupdatedb(1), emerge(1)
+
+.SH "BUGS"
+Pas de bugs connus
+
+.SH "AUTEUR"
+<davidpeter@web.de> Peter David
