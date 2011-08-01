@@ -70,7 +70,10 @@ def usage():
     sys.exit(0)
 
 try:
-    opts = getopt(sys.argv[1:], "hwdmnvs", ["help", "webrsync", "delta-webrsync", "nocolor", "verbose", "metadata", "nospinner"])
+    opts = getopt(sys.argv[1:], "hwdmnqvs",
+        ["help", "webrsync", "delta-webrsync",
+        "nocolor", "verbose", "metadata", "nospinner",
+        "quiet"])
 except GetoptError, error:
     print red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)"
     print
