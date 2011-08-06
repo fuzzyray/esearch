@@ -13,32 +13,26 @@
 
 import os
 import sys
-from getopt import *
+from getopt import getopt, GetoptError
 
-sys.path.insert(0, "/usr/lib/portage/pym")
+#sys.path.insert(0, "/usr/lib/portage/pym")
 
 import portage
 try:
     from portage.output import red, green, bold, darkgreen, nocolor, xtermTitle
 except ImportError:
-    from output import red, green, bold, darkgreen, nocolor, xtermTitle
+    print "Critical: portage imports failed!"
+    sys.exit(1)
 
-from common import needdbversion
+from common import (CONFIG, SyncOpts, outofdateerror, logfile_sync,
+    tmp_path, tmp_prefix, version)
 
-syncprogram =   "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge --sync"
-logfile_sync =  "/var/log/emerge-sync.log"
-tmp_prefix =    "/tmp/esync"
 
-sys.path.append("/tmp")
+sys.path.append(tmp_path)
 
-eoptions = ""
-eupdatedb_extra_options = ""
-showtitles = "notitles" not in portage.features
-verbose = False
-quiet = False
 
 def usage():
-    print "esync (0.7.1) - Calls 'emerge sync' and 'eupdatedb' and shows updates"
+    print "esync (%s) - Calls 'emerge sync' and 'eupdatedb' and shows updates" % version
     print ""
     print bold("Usage:"), "esync [", darkgreen("options"), "]"
     print bold("Options:")
@@ -66,59 +60,50 @@ def usage():
     print darkgreen("  --nospinner") + ", " + darkgreen("-s")
     print "    Don't display the remaining index count"
 
-
     sys.exit(0)
 
-try:
-    opts = getopt(sys.argv[1:], "hwdmnqvs",
-        ["help", "webrsync", "delta-webrsync",
-        "nocolor", "verbose", "metadata", "nospinner",
-        "quiet"])
-except GetoptError, error:
-    print red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)"
-    print
-    sys.exit(1)
 
-for a in opts[0]:
-    arg = a[0]
+def parseopts(opts, config=None):
 
-    if arg in ("-h", "--help"):
-        usage()
-    elif arg in ("-w", "--webrsync"):
-        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" /usr/sbin/emerge-webrsync"
-    elif arg in ("-d", "--delta-webrsync"):
-        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge-delta-webrsync -u"
-    elif arg in ("-m", "--metadata"):
-        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge --metadata"
-    elif arg in ("-n", "--nocolor"):
-        eoptions = "-n"
-        nocolor()
-        showtitles = False
-    elif arg in ("-q", "--quiet"):
-        eupdatedb_extra_options = "-q"
-        quiet = True
-        verbose = False
-    elif arg in ("-v", "--verbose"):
-        verbose = True
-        quiet = False
-    elif arg in ("-s", "--nospinner"):
-        eupdatedb_extra_options = "-q"
+    if config is None:
+        config = CONFIG
+
+    # reset the default
+    config['showtitles'] = "notitles" not in portage.features
+    for a in opts[0]:
+        arg = a[0]
+        if arg in ("-h", "--help"):
+            usage()
+        elif arg in ("-w", "--webrsync"):
+            config['syncprogram'] = SyncOpts["webrsync"]
+        elif arg in ("-d", "--delta-webrsync"):
+            config['syncprogram'] = SyncOpts["delta-webrsync"]
+        elif arg in ("-m", "--metadata"):
+            config['syncprogram'] = SyncOpts["metadata"]
+        elif arg in ("-n", "--nocolor"):
+            config['eoptions'] = "-n"
+            nocolor()
+            config['showtitles'] = False
+        elif arg in ("-q", "--quiet"):
+            config['eupdatedb_extra_options'] = "-q"
+            config['verbose'] = -1
+        elif arg in ("-v", "--verbose"):
+            config['verbose'] = 1
+        elif arg in ("-s", "--nospinner"):
+            config['eupdatedb_extra_options'] = "-q"
+    return config
 
 
-def emsg(msg):
-    global showtitles
-    if showtitles:
+def emsg(msg, config):
+    if config['showtitles']:
         xtermTitle(msg)
-    if quiet: return
+    if config['verbose'] == -1:
+        return
     print green(" *"), msg
 
-def outofdateerror():
-    print red(" * Error:"), "The version of the esearch index is out of date, please run", green("eupdatedb")
-    print ""
-    sys.exit(1)
 
-def gettree(tree):
-    emsg("Importing " + tree + " portage tree")
+def gettree(tree, config):
+    emsg("Importing " + tree + " portage tree", config)
     try:
         target = tmp_prefix + tree + "tree.pyc"
         if os.path.exists(target):
@@ -134,72 +119,108 @@ def gettree(tree):
             from esyncoldtree import db
             try:
                 from esyncoldtree import dbversion
-                if dbversion < needdbversion:
+                if dbversion < config['needdbversion']:
                     outofdateerror()
             except ImportError:
                 outofdateerror()
         else:
             from esyncnewtree import db
     except ImportError:
-        print red(" * Error:"), "Could not find esearch-index. Please run", green("eupdatedb"), "as root first"
+        print red(" * Error:"), "Could not find esearch-index. Please run", \
+            green("eupdatedb"), "as root first"
         print ""
         sys.exit(1)
     os.unlink(target)
     return db
 
-tree_old = gettree("old")
 
-if not quiet: emsg("Doing '" + syncprogram + "' now")
+def sync(config):
 
-if verbose:
-    errorcode = os.system(syncprogram + " | tee " + logfile_sync + " 2>&1")
-else:
-    errorcode = os.system(syncprogram + " > " + logfile_sync + " 2>&1")
+    tree_old = gettree("old", config)
 
-if errorcode != 0:
-    print red(" * Error:"), "'" + syncprogram + "'", "failed, see", logfile_sync, "for errors"
+    if config['verbose'] >= 0:
+        emsg("Doing '" + config['syncprogram'] + "' now", config)
+
+    if config['verbose'] == 1:
+        errorcode = os.system(config['syncprogram'] + " | tee " + logfile_sync + " 2>&1")
+    else:
+        errorcode = os.system(config['syncprogram'] + " > " + logfile_sync + " 2>&1")
+
+    if errorcode != 0:
+        print red(" * Error:"),\
+            "'" + config['syncprogram'] + "'",\
+             "failed, see", logfile_sync, "for errors"
+        print ""
+        return False
+
+    if config['verbose'] >= 0:
+        print ""
+        emsg("Doing 'eupdatedb' now", config)
+        print ""
+
+
+    # migrate this to using updatedb() natively
+    if os.system("/usr/sbin/eupdatedb " + config['eoptions'] + " " + \
+        config['eupdatedb_extra_options']) != '':
+        print ""
+        print red(" * Error:"), "eupdatedb failed"
+        return False
+
+    if config['verbose'] >= 0:
+        print ""
+
+    tree_new = gettree("new", config)
+
+    emsg("Preparing databases", config)
+
+    new = {}
+    for pkg in tree_new:
+        new[pkg[1]] = pkg[3]
+
+    old = {}
+    for pkg in tree_old:
+        old[pkg[1]] = pkg[3]
+
+    emsg("Searching for changes", config)
     print ""
-    sys.exit(1)
 
-if not quiet:
-    print ""
-    emsg("Doing 'eupdatedb' now")
-    print ""
+    # alphabetic sort
+    items = new.items()
+    items.sort(lambda x, y: cmp(x[0], y[0]))
 
-if os.system("/usr/sbin/eupdatedb " + eoptions + " " + eupdatedb_extra_options) != 0:
-    print ""
-    print red(" * Error:"), "eupdatedb failed"
-    sys.exit(1)
+    old_keys = old.keys()
 
-if not quiet: print ""
+    haspkg = False
 
-tree_new = gettree("new")
+    for (pkg, version) in items:
+        if (pkg not in old_keys) or (old[pkg] != new[pkg]):
+            # migrate this to using searchdb() natively
+            os.system("/usr/bin/esearch " + config['eoptions'] + \
+                " -Fc ^" + pkg + "$ | head -n1")
+            haspkg = True
 
-emsg("Preparing databases")
+    if not haspkg:
+        emsg("No updates found", config)
+    return True
 
-new = {}
-for pkg in tree_new:
-    new[pkg[1]] = pkg[3]
 
-old = {}
-for pkg in tree_old:
-    old[pkg[1]] = pkg[3]
+def main():
+    try:
+        opts = getopt(sys.argv[1:], "hwdmnqvs",
+            ["help", "webrsync", "delta-webrsync",
+            "nocolor", "verbose", "metadata", "nospinner",
+            "quiet"])
+    except GetoptError, error:
+        print red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)"
+        print
+        sys.exit(1)
 
-emsg("Searching for changes")
-print ""
+    config = parseopts(opts)
+    success = sync(config)
+    # sys.exit() values are opposite T/F
+    sys.exit(not success)
 
-# alphabetic sort
-items = new.items()
-items.sort(lambda x, y: cmp(x[0], y[0]))
 
-old_keys = old.keys()
+if __name__ == '__main__':
 
-haspkg = False
-
-for (pkg, version) in items:
-    if (pkg not in old_keys) or (old[pkg] != new[pkg]):
-        os.system("/usr/bin/esearch " + eoptions + " -Fc ^" + pkg + "$ | head -n1")
-        haspkg = True
-
-if not haspkg:
-    emsg("No updates found")
+    main()

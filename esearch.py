@@ -7,25 +7,30 @@
 # Author: David Peter <davidpeter@web.de>
 #
 
-from getopt import *
+from getopt import getopt, GetoptError
 import sys
-
-sys.path.insert(0, "/usr/lib/portage/pym")
-sys.path.insert(0, "/usr/lib/esearch")
-
-try:
-    from portage.output import bold, red, green, darkgreen, turquoise, nocolor
-except ImportError:
-    from output import bold, red, green, darkgreen, turquoise, nocolor, blue
-from os.path import exists
+from os import listdir, getenv, system
+from os.path import isdir, exists
 import re
 
-from common import needdbversion
+sys.path.insert(0, "/usr/lib/portage/pym")
+# commented out so it can run from the git checkout
+#sys.path.insert(0, "/usr/lib/esearch")
 
-esearchdbdir =  "/var/cache/edb/"
+try:
+    from portage.output import bold, red, green, darkgreen, turquoise, blue, nocolor
+    from portage import settings, pkgcmp, pkgsplit, portdb, best
+except ImportError:
+    print "Critical: portage imports failed!"
+    sys.exit(1)
+
+from common import (CONFIG, NORMAL, COMPACT, VERBOSE, EBUILDS, OWN, pkg_version,
+    error, outofdateerror, version)
+
+
 
 def usage():
-    print "esearch (0.7.1) - Replacement for 'emerge search' with search-index"
+    print "esearch (%s) - Replacement for 'emerge search' with search-index" % version
     print ""
     print bold("Usage:"), "esearch [", darkgreen("options"), "] pattern"
     print bold("Options:")
@@ -64,20 +69,17 @@ def usage():
 
     sys.exit(0)
 
-def error(msg, fatal = True):
-    print red(" * Error:"), msg
-    print
-    if fatal:
-        sys.exit(1)
+
 
 def mypkgcmp(pkg1, pkg2):
-	return pkgcmp(pkg1[:3], pkg2[:3])
+    return pkgcmp(pkg1[:3], pkg2[:3])
 
-def searchEbuilds(path, portdir = True, searchdef = "", repo_num = ""):
-    global ebuilds, output, defebuild, found_in_overlay
+
+def searchEbuilds(path, portdir=True, searchdef="", repo_num="",
+        config=None, data=None):
     pv = ""
     pkgs = []
-    nr = len(ebuilds) + 1
+    nr = len(data['ebuilds']) + 1
 
     if portdir:
         rep = darkgreen("Portage    ")
@@ -93,313 +95,319 @@ def searchEbuilds(path, portdir = True, searchdef = "", repo_num = ""):
                 pkgs.append(list(pkgsplit(pv)))
                 pkgs[-1].append(path + file)
                 if searchdef != "" and pv == searchdef:
-                    defebuild = (searchdef, pkgs[-1][3])
-		if not portdir:
-		    found_in_overlay = True
+                    data['defebuild'] = (searchdef, pkgs[-1][3])
+        if not portdir:
+            config['found_in_overlay'] = True
         pkgs.sort(mypkgcmp)
         for pkg in pkgs:
             rev = ""
             if pkg[2] != "r0":
                 rev = "-" + pkg[2]
-            output.append(" " + rep + " [" + bold(str(nr)) + "] " + pkg[0] + "-" + pkg[1] + rev + "\n")
-            ebuilds.append(pkg[len(pkg)-1])
+            data['output'].append(" " + rep + " [" + bold(str(nr)) + "] " +
+                pkg[0] + "-" + pkg[1] + rev + "\n")
+            data['ebuilds'].append(pkg[len(pkg)-1])
             nr += 1
- 
-NORMAL =  1
-COMPACT = 2
-VERBOSE = 3
-EBUILDS = 4
-OWN =     5
-
-outputm =    NORMAL
-searchdesc = False
-fullname =   False
-pattern =    False
-instonly =   False
-notinst =    False
-found_in_overlay = False
-
-try:
-    opts = getopt(sys.argv[1:], "hSFINcveo:d:n", ["help", "searchdesc", "fullname", "instonly", "notinst", "compact", "verbose", "ebuild", "own=", "directory=", "nocolor"])
-except GetoptError, errmsg:
-    error(str(errmsg) + " (see " + darkgreen("--help") + " for all options)")
-
-for a in opts[0]:
-    arg = a[0]
-
-    if arg in ("-S", "--searchdesc"):
-        searchdesc = True
-    elif arg in ("-F", "--fullname"):
-        fullname = True
-    elif arg in ("-I", "--instonly"):
-        instonly = True
-    elif arg in ("-N", "--notinst"):
-        notinst = True
-    elif arg in ("-c", "--compact"):
-        outputm = COMPACT
-    elif arg in ("-v", "--verbose"):
-        import string
-        from portage import portdb, best, settings
-        try:
-            from portage.output import blue
-        except ImportError:
-            from output import blue
-        from common import version
-        outputm = VERBOSE
-    elif arg in ("-e", "--ebuild"):
-        from os import listdir, getenv, system
-        from os.path import isdir
-        from portage import settings, pkgcmp, pkgsplit
-
-        portdir = settings["PORTDIR"]
-        overlay = settings["PORTDIR_OVERLAY"]
-        outputm = EBUILDS
-        ebuilds = []
-        defebuild = (0, 0)
-    elif arg in ("-o", "--own"):
-        outputm = OWN
-        outputf = a[1]
-    elif arg in ("-d", "--directory"):
-        esearchdbdir = a[1]
-        if not exists(esearchdbdir):
-            error("directory '" + darkgreen(esearchdbdir) + "' does not exist.")
-    elif arg in ("-n", "--nocolor"):
-        nocolor()
-
-if fullname and searchdesc:
-    error("Please use either " + darkgreen("--fullname") + " or " + darkgreen("--searchdesc"))
-
-if len(opts[1]) == 0:
-    usage()
-
-def outofdateerror():
-    error("The version of the esearch index is out of date, please run " + green("eupdatedb"))
 
 
-try:
-    sys.path.append(esearchdbdir)
-    from esearchdb import db
+def parseopts(opts, config=None):
+
+    if config is None:
+        config = CONFIG
+
+    if len(opts[1]) == 0:
+        usage()
+
+    for a in opts[0]:
+        arg = a[0]
+        if arg in ("-S", "--searchdesc"):
+            config['searchdesc'] = True
+        elif arg in ("-F", "--fullname"):
+            config['fullname'] = True
+        elif arg in ("-I", "--instonly"):
+            config['instonly'] = True
+        elif arg in ("-N", "--notinst"):
+            config['notinst'] = True
+        elif arg in ("-c", "--compact"):
+            config['outputm'] = COMPACT
+        elif arg in ("-v", "--verbose"):
+            config['outputm'] = VERBOSE
+        elif arg in ("-e", "--ebuild"):
+            config['portdir'] = settings["PORTDIR"]
+            config['overlay'] = settings["PORTDIR_OVERLAY"]
+            config['outputm'] = EBUILDS
+        elif arg in ("-o", "--own"):
+            config['outputm'] = OWN
+            config['outputf'] = a[1]
+        elif arg in ("-d", "--directory"):
+            config['esearchdbdir'] = a[1]
+            if not exists(config['esearchdbdir']):
+                error("directory '" + darkgreen(config['esearchdbdir']) + "' does not exist.")
+        elif arg in ("-n", "--nocolor"):
+            nocolor()
+    return config
+
+
+
+def loaddb(config):
+    """Loads the esearchdb"""
     try:
-        from esearchdb import dbversion
-        if dbversion < needdbversion:
+        sys.path.append(config['esearchdbdir'])
+        from esearchdb import db
+        try:
+            from esearchdb import dbversion
+            if dbversion < config['needdbversion']:
+                outofdateerror()
+        except ImportError:
             outofdateerror()
     except ImportError:
-        outofdateerror()
-except ImportError:
-    error("Could not find esearch-index. Please run " + green("eupdatedb") + " as root first")
+        error("Could not find esearch-index. Please run " + green("eupdatedb") + " as root first")
+    return db
 
 
-patterns = opts[1]
-regexlist = []
+def searchdb(config, patterns, db=None):
 
-# Hacks for people who aren't regular expression gurus
-for pattern in patterns:
-    if pattern == "*":
-        pattern = ".*"
-    else:
-        pattern = re.sub("\+\+", "\+\+", pattern)
-    try:
-        regexlist.append([re.compile(pattern, re.IGNORECASE), pattern, "", 0])
-    except re.error:
-        error("Invalid regular expression.")
-        sys.exit(1)
+    data = {}
+    data['ebuilds'] = []
+    data['defebuild'] = (0, 0)
 
-# Could also loop through all packages only once, and remember which
-# regex from regexlist has matched this package, and then build the output
-# => probably faster
-
-i = 0
-for regex, pattern, foo, foo in regexlist:
-    count = 0
-    output = []
-    for pkg in db:
-        found = False
-
-        if instonly and not pkg[4]:
-            continue
-        elif notinst and pkg[4]:
-            continue
-
-        if fullname and regex.search(pkg[1]):
-            found = True
-        elif not fullname and regex.search(pkg[0]):
-            found = True
-        elif searchdesc and regex.search(pkg[7]):
-            found = True
-
-        if found:
-            if outputm in (NORMAL, VERBOSE):
-                if not pkg[4]:
-                    installed = "[ Not Installed ]"
-                else:
-                    installed = pkg[4]
-
-                if pkg[2]:
-                    masked = red(" [ Masked ]")
-                else:
-                    masked = ""
-
-                output.append("%s  %s%s\n      %s %s\n      %s %s\n" % \
-                        (green("*"), bold(pkg[1]), masked,
-                        darkgreen("Latest version available:"), pkg[3],
-                        darkgreen("Latest version installed:"), installed))
-
-                if outputm == VERBOSE:
-                    mpv = best(portdb.xmatch("match-all", pkg[1]))
-                    try:
-                        iuse_split = string.split(portdb.aux_get(pkg[1] + "-" +  pkg[3], ["IUSE"])[0], " ")
-                    except KeyError, e:
-                        print "Package %s is no longer in the portage tree." % pkg[1] + "-" + pkg[3]
-                        continue
-                    iuse_split.sort()
-                    iuse = ""
-
-                    for ebuild_iuse in iuse_split:
-                        if not ebuild_iuse:
-                            continue
-                        if ebuild_iuse in settings["USE"]:
-                            iuse += red("+" + ebuild_iuse) + " "
-                        else:
-                            iuse += blue("-" + ebuild_iuse) + " "
-
-                    if iuse == "":
-                        iuse = "-"
-
-                    output.append("      %s         %s\n      %s       %s\n" % \
-                            (darkgreen("Unstable version:"), version(mpv),
-                             darkgreen("Use Flags (stable):"), iuse))
-
-                output.append("      %s %s\n      %s    %s\n      %s %s\n      %s     %s\n\n" % \
-                        (darkgreen("Size of downloaded files:"), pkg[5],
-                         darkgreen("Homepage:"), pkg[6],
-                         darkgreen("Description:"), pkg[7],
-                         darkgreen("License:"), pkg[8]))
-
-            elif outputm in (COMPACT, EBUILDS):
-                prefix0 = " "
-                prefix1 = " "
-
-                if pkg[3] == pkg[4]:
-                    color = darkgreen
-                    prefix1 = "I"
-                elif not pkg[4]:
-                    color = darkgreen
-                    prefix1 = "N"
-                else:
-                    color = turquoise
-                    prefix1 = "U"
-
-                if pkg[2]:
-                    prefix0 = "M"
-
-                output.append("[%s%s] %s (%s):  %s\n" % \
-                        (red(prefix0), color(prefix1), bold(pkg[1]), color(pkg[3]), pkg[7]))
-
-            elif outputm == OWN:
-                # %c => category
-                # %n => package name
-                # %p => same as %c/%n
-                # %m => masked
-                # %va => latest version available
-                # %vi => latest version installed
-                # %s => size of downloaded files
-                # %h => homepage
-                # %d => description
-                # %l => license
-
-                o = outputf
-                o = o.replace("%c", pkg[1].split("/")[0])
-                o = o.replace("%n", pkg[0])
-                o = o.replace("%p", pkg[1])
-
-                masked = ""
-                if pkg[2]:
-                    masked = "masked"
-                o = o.replace("%m", masked)
-                o = o.replace("%va", pkg[3])
-
-                installed = pkg[4]
-                if not installed:
-                    installed = ""
-                o = o.replace("%vi", installed)
-                o = o.replace("%s", pkg[5])
-                o = o.replace("%h", pkg[6])
-                o = o.replace("%d", pkg[7])
-                o = o.replace("%l", pkg[8])
-
-                o = o.replace("\\n", "\n")
-                o = o.replace("\\t", "\t")
-                output.append(o)
-
-            if outputm == EBUILDS:
-                if count == 0:
-                    searchdef = pkg[0] + "-" + pkg[3]
-                else:
-                    searchdef = ""
-
-                searchEbuilds("%s/%s/" % (portdir, pkg[1]), True, searchdef, "")
-                if overlay:
-                    repo_num=1
-                    for repo in overlay.split():
-                        searchEbuilds("%s/%s/" % ( repo, pkg[1]), False, searchdef,repo_num)
-                        repo_num += 1
-
-                output.append("\n")
-            count += 1
-
-    regexlist[i][2] = "".join(output)
-    regexlist[i][3] = count
-    i += 1
-
-for regex, pattern, output, count in regexlist:
-    if outputm == NORMAL:
-        print "[ Results for search key :", bold(pattern), "]"
-        print "[ Applications found :", bold(str(count)), "]\n"
-
-    try:
-    	print output,
-    except IOError:
-    	pass
-
-    if outputm == NORMAL:
-        print ""
+    if config['fullname'] and config['searchdesc']:
+        error("Please use either " + darkgreen("--fullname") + " or " + darkgreen("--searchdesc"))
 
 
-if outputm == EBUILDS:
-    if overlay and found_in_overlay:
-        repo_num=1
-        for repo in overlay.split():
-            print red("Overlay "+str(repo_num)+" : "+repo)
-            repo_num += 1
-    
-    if count != 0:
-        if count > 1:
-            defebuild = (0, 0)
+    regexlist = []
 
-        if len(ebuilds) == 1:
-            nr = 1
+    # Hacks for people who aren't regular expression gurus
+    for pattern in patterns:
+        if pattern == "*":
+            pattern = ".*"
         else:
-            if defebuild[0] != 0:
-                print bold("\nShow Ebuild"), " (" + darkgreen(defebuild[0]) + "): ",
-            else:
-                print bold("\nShow Ebuild: "),
-            try:
-                nr = sys.stdin.readline()
-            except KeyboardInterrupt:
-                sys.exit(1)
+            pattern = re.sub("\+\+", "\+\+", pattern)
         try:
-            editor = getenv("EDITOR")
-            if editor:
-                system(editor + " " + ebuilds[int(nr) - 1])
-            else:
-                print ""
-                error("Please set EDITOR", False)
-        except IndexError:
+            regexlist.append([re.compile(pattern, re.IGNORECASE), pattern, "", 0])
+        except re.error:
+            error("Invalid regular expression.")
+            sys.exit(1)
+
+    # Could also loop through all packages only once, and remember which
+    # regex from regexlist has matched this package, and then build the output
+    # => probably faster
+
+    i = 0
+    for regex, pattern, foo, foo in regexlist:
+        count = 0
+        data['output'] = []
+        for pkg in db:
+            found = False
+
+            if config['instonly'] and not pkg[4]:
+                continue
+            elif config['notinst'] and pkg[4]:
+                continue
+
+            if config['fullname'] and regex.search(pkg[1]):
+                found = True
+            elif not config['fullname'] and regex.search(pkg[0]):
+                found = True
+            elif config['searchdesc'] and regex.search(pkg[7]):
+                found = True
+
+            if found:
+                if config['outputm'] in (NORMAL, VERBOSE):
+                    if not pkg[4]:
+                        installed = "[ Not Installed ]"
+                    else:
+                        installed = pkg[4]
+
+                    if pkg[2]:
+                        masked = red(" [ Masked ]")
+                    else:
+                        masked = ""
+
+                    data['output'].append("%s  %s%s\n      %s %s\n      %s %s\n" % \
+                            (green("*"), bold(pkg[1]), masked,
+                            darkgreen("Latest version available:"), pkg[3],
+                            darkgreen("Latest version installed:"), installed))
+
+                    if config['outputm'] == VERBOSE:
+                        mpv = best(portdb.xmatch("match-all", pkg[1]))
+                        try:
+                            iuse_split = portdb.aux_get(pkg[1] + "-" +  pkg[3], ["IUSE"])[0].split()
+                        except KeyError:
+                            print "Package %s is no longer in the portage tree." % pkg[1] + "-" + pkg[3]
+                            continue
+                        iuse_split.sort()
+                        iuse = ""
+
+                        for ebuild_iuse in iuse_split:
+                            if not ebuild_iuse:
+                                continue
+                            if ebuild_iuse in settings["USE"]:
+                                iuse += red("+" + ebuild_iuse) + " "
+                            else:
+                                iuse += blue("-" + ebuild_iuse) + " "
+
+                        if iuse == "":
+                            iuse = "-"
+
+                        data['output'].append("      %s         %s\n      %s       %s\n" % \
+                                (darkgreen("Unstable version:"), pkg_version(mpv),
+                                 darkgreen("Use Flags (stable):"), iuse))
+
+                    data['output'].append("      %s %s\n      %s    %s\n      %s %s\n      %s     %s\n\n" % \
+                            (darkgreen("Size of downloaded files:"), pkg[5],
+                             darkgreen("Homepage:"), pkg[6],
+                             darkgreen("Description:"), pkg[7],
+                             darkgreen("License:"), pkg[8]))
+
+                elif config['outputm'] in (COMPACT, EBUILDS):
+                    prefix0 = " "
+                    prefix1 = " "
+
+                    if pkg[3] == pkg[4]:
+                        color = darkgreen
+                        prefix1 = "I"
+                    elif not pkg[4]:
+                        color = darkgreen
+                        prefix1 = "N"
+                    else:
+                        color = turquoise
+                        prefix1 = "U"
+
+                    if pkg[2]:
+                        prefix0 = "M"
+
+                    data['output'].append("[%s%s] %s (%s):  %s\n" % \
+                            (red(prefix0), color(prefix1), bold(pkg[1]), color(pkg[3]), pkg[7]))
+
+                elif config['outputm'] == OWN:
+                    # %c => category
+                    # %n => package name
+                    # %p => same as %c/%n
+                    # %m => masked
+                    # %va => latest version available
+                    # %vi => latest version installed
+                    # %s => size of downloaded files
+                    # %h => homepage
+                    # %d => description
+                    # %l => license
+
+                    o = config['outputf']
+                    o = o.replace("%c", pkg[1].split("/")[0])
+                    o = o.replace("%n", pkg[0])
+                    o = o.replace("%p", pkg[1])
+
+                    masked = ""
+                    if pkg[2]:
+                        masked = "masked"
+                    o = o.replace("%m", masked)
+                    o = o.replace("%va", pkg[3])
+
+                    installed = pkg[4]
+                    if not installed:
+                        installed = ""
+                    o = o.replace("%vi", installed)
+                    o = o.replace("%s", pkg[5])
+                    o = o.replace("%h", pkg[6])
+                    o = o.replace("%d", pkg[7])
+                    o = o.replace("%l", pkg[8])
+
+                    o = o.replace("\\n", "\n")
+                    o = o.replace("\\t", "\t")
+                    data['output'].append(o)
+
+                if config['outputm'] == EBUILDS:
+                    if count == 0:
+                        searchdef = pkg[0] + "-" + pkg[3]
+                    else:
+                        searchdef = ""
+
+                    searchEbuilds("%s/%s/" % (config['portdir'], pkg[1]),
+                        True, searchdef, "", config, data)
+                    if config['overlay']:
+                        repo_num=1
+                        for repo in config['overlay'].split():
+                            searchEbuilds("%s/%s/" % ( repo, pkg[1]),
+                                False, searchdef,repo_num, config, data)
+                            repo_num += 1
+
+                    data['output'].append("\n")
+                count += 1
+
+        regexlist[i][2] = "".join(data['output'])
+        regexlist[i][3] = count
+        i += 1
+
+    for regex, pattern, output, count in regexlist:
+        if config['outputm'] == NORMAL:
+            print "[ Results for search key :", bold(pattern), "]"
+            print "[ Applications found :", bold(str(count)), "]\n"
+
+        try:
+            print output,
+        except IOError:
+            pass
+
+        if config['outputm'] == NORMAL:
             print ""
-            error("No such ebuild", False)
-        except ValueError:
-            if defebuild[0] != 0:
-                system(editor + " " + defebuild[1])
+
+
+    if config['outputm'] == EBUILDS:
+        if config['overlay'] and config['found_in_overlay']:
+            repo_num=1
+            for repo in config['overlay'].split():
+                print red("Overlay "+str(repo_num)+" : "+repo)
+                repo_num += 1
+
+        if count != 0:
+            if count > 1:
+                data['defebuild'] = (0, 0)
+
+            if len(data['ebuilds']) == 1:
+                nr = 1
             else:
+                if data['defebuild'][0] != 0:
+                    print bold("\nShow Ebuild"), " (" + darkgreen(data['defebuild'][0]) + "): ",
+                else:
+                    print bold("\nShow Ebuild: "),
+                try:
+                    nr = sys.stdin.readline()
+                except KeyboardInterrupt:
+                    return False
+            try:
+                editor = getenv("EDITOR")
+                if editor:
+                    system(editor + " " + data['ebuilds'][int(nr) - 1])
+                else:
+                    print ""
+                    error("Please set EDITOR", False)
+            except IndexError:
                 print ""
-                error("Please enter a valid number", False)
+                error("No such ebuild", False)
+            except ValueError:
+                if data['defebuild'][0] != 0:
+                    system(editor + " " + data['defebuild'][1])
+                else:
+                    print ""
+                    error("Please enter a valid number", False)
+    return True
+
+
+def main():
+    try:
+        opts = getopt(sys.argv[1:], "hSFINcveo:d:n",
+            ["help", "searchdesc", "fullname", "instonly", "notinst",
+             "compact", "verbose", "ebuild", "own=", "directory=", "nocolor"
+            ])
+    except GetoptError, errmsg:
+        error(str(errmsg) + " (see " + darkgreen("--help") + " for all options)")
+        print
+        sys.exit(1)
+    config = parseopts(opts)
+    db = loaddb(config)
+    success = searchdb(config, opts[1], db)
+    # sys.exit() values are opposite T/F
+    sys.exit(not success)
+
+if __name__ == '__main__':
+
+    main()
