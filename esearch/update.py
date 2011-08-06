@@ -29,7 +29,7 @@ except ImportError:
     print "Critical: portage imports failed!"
     sys.exit(1)
 
-from common import version, CONFIG, pkg_version
+from esearch.common import version, CONFIG, pkg_version
 
 
 

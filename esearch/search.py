@@ -24,7 +24,7 @@ except ImportError:
     print "Critical: portage imports failed!"
     sys.exit(1)
 
-from common import (CONFIG, NORMAL, COMPACT, VERBOSE, EBUILDS, OWN, pkg_version,
+from esearch.common import (CONFIG, NORMAL, COMPACT, VERBOSE, EBUILDS, OWN, pkg_version,
     error, outofdateerror, version)
 
 

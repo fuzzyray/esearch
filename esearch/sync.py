@@ -24,7 +24,7 @@ except ImportError:
     print "Critical: portage imports failed!"
     sys.exit(1)
 
-from common import (CONFIG, SyncOpts, outofdateerror, logfile_sync,
+from esearch.common import (CONFIG, SyncOpts, outofdateerror, logfile_sync,
     tmp_path, tmp_prefix, version)
 
 
@@ -32,7 +32,8 @@ sys.path.append(tmp_path)
 
 
 def usage():
-    print "esync (%s) - Calls 'emerge sync' and 'eupdatedb' and shows updates" % version
+    print "esync (%s) - Calls 'emerge sync' and 'eupdatedb' and shows updates"
+        % version
     print ""
     print bold("Usage:"), "esync [", darkgreen("options"), "]"
     print bold("Options:")
