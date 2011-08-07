@@ -26,13 +26,13 @@ except ImportError:
 
 from esearch.common import (CONFIG, SyncOpts, outofdateerror, logfile_sync,
     tmp_path, tmp_prefix, version)
-
+from esearch.update import updatedb
 
 sys.path.append(tmp_path)
 
 
 def usage():
-    print "esync (%s) - Calls 'emerge sync' and 'eupdatedb' and shows updates"
+    print "esync (%s) - Calls 'emerge sync' and 'eupdatedb' and shows updates" \
         % version
     print ""
     print bold("Usage:"), "esync [", darkgreen("options"), "]"
@@ -159,12 +159,11 @@ def sync(config):
         emsg("Doing 'eupdatedb' now", config)
         print ""
 
-
-    # migrate this to using updatedb() natively
-    if os.system("/usr/sbin/eupdatedb " + config['eoptions'] + " " + \
-        config['eupdatedb_extra_options']) != '':
+    # run eupdatedb natively
+    success = updatedb(config)
+    if not success:
         print ""
-        print red(" * Error:"), "eupdatedb failed"
+        print red(" * Error:"), "running updatedb failed"
         return False
 
     if config['verbose'] >= 0:
