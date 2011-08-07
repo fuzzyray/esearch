@@ -6,6 +6,8 @@
 # Author: David Peter <davidpeter@web.de>
 #
 
+from __future__ import print_function
+
 from time import time
 start = time()
 
@@ -26,7 +28,7 @@ try:
     from portage.manifest import Manifest
     from portage.exception import PortageException
 except ImportError:
-    print "Critical: portage imports failed!"
+    print("Critical: portage imports failed!")
     sys.exit(1)
 
 from esearch.common import version, CONFIG, pkg_version
@@ -36,24 +38,24 @@ from esearch.common import version, CONFIG, pkg_version
 VARTREE = portage.vartree()
 
 def usage():
-    print "eupdatedb (%s) - Update the search-index for esearch" % version
-    print ""
-    print bold("Usage:"), "eupdatedb [", darkgreen("options"), "]"
-    print bold("Options:")
-    print darkgreen("  --help") + ", " + darkgreen("-h")
-    print "    Print this help message"
-    print ""
-    print darkgreen("  --verbose") + ", " + darkgreen("-v")
-    print "    Verbose mode, show categories"
-    print ""
-    print darkgreen("  --quiet") + ", " + darkgreen("-q")
-    print "    Print only summary"
-    print ""
-    print darkgreen("  --directory=") + "dir, " + darkgreen("-d") + " dir"
-    print "    Load esearch index from dir"
-    print ""
-    print darkgreen("  --nocolor") + ", " + darkgreen("-n")
-    print "    Don't use ANSI codes for colored output"
+    print("eupdatedb (%s) - Update the search-index for esearch" % version)
+    print("")
+    print(bold("Usage:"), "eupdatedb [", darkgreen("options"), "]")
+    print(bold("Options:"))
+    print(darkgreen("  --help") + ", " + darkgreen("-h"))
+    print("    Print this help message")
+    print("")
+    print(darkgreen("  --verbose") + ", " + darkgreen("-v"))
+    print("    Verbose mode, show categories")
+    print("")
+    print(darkgreen("  --quiet") + ", " + darkgreen("-q"))
+    print("    Print only summary")
+    print("")
+    print(darkgreen("  --directory=") + "dir, " + darkgreen("-d") + " dir")
+    print("    Load esearch index from dir")
+    print("")
+    print(darkgreen("  --nocolor") + ", " + darkgreen("-n"))
+    print("    Don't use ANSI codes for colored output")
 
     sys.exit(0)
 
@@ -105,9 +107,9 @@ def parseopts(opts, config=None):
         elif arg in ("-d", "--directory"):
             config['esearchdbdir'] = a[1]
             if not exists(config['esearchdbdir']):
-                print red(" * Error:"), "directory '" + \
-                    darkgreen(config['esearchdbdir']) + "'", "does not exist."
-                print ""
+                print(red(" * Error:"), "directory '" + \
+                    darkgreen(config['esearchdbdir']) + "'", "does not exist.")
+                print("")
                 sys.exit(1)
 
         elif arg in ("-n", "--nocolor"):
@@ -118,28 +120,28 @@ def parseopts(opts, config=None):
 def updatedb(config=None):
 
     if not os.access(config['esearchdbdir'], os.W_OK):
-        print red("Warning:"), \
+        print(red("Warning:"), \
             "You do not have sufficient permissions to save the index file in:",\
-            green(config['esearchdbdir'])
+            green(config['esearchdbdir']))
         return False
 
-    if config['verbose'] != -1 and environ.has_key("ACCEPT_KEYWORDS"):
-        print red("Warning:"), \
-            "You have set ACCEPT_KEYWORDS in environment, this will result"
-        print "         in a modified index file"
+    if config['verbose'] != -1 and "ACCEPT_KEYWORDS" in environ:
+        print(red("Warning:"), \
+            "You have set ACCEPT_KEYWORDS in environment, this will result")
+        print("         in a modified index file")
 
     ebuilds = portage.portdb.cp_all()
     numebuilds = len(ebuilds)
 
     if exists(config['tmpfile']):
-        print red("Error: "), " there is probably another eupdatedb running already."
-        print "         If you're sure there is no other process, remove", config['tmpfile']
-        print ""
+        print(red("Error: "), " there is probably another eupdatedb running already.")
+        print("         If you're sure there is no other process, remove", config['tmpfile'])
+        print("")
         return False
     try:
-        dbfd = open(config['tmpfile'], O_CREAT | O_EXCL | O_WRONLY, 0600)
+        dbfd = open(config['tmpfile'], O_CREAT | O_EXCL | O_WRONLY, 0o600)
     except OSError:
-        print red("Error: "), " failed to open temporary file."
+        print(red("Error: "), " failed to open temporary file.")
         return False
     dbfile = fdopen(dbfd, "w")
     dbfile.write("dbversion = " + str(config['needdbversion']) + "\n")
@@ -189,8 +191,8 @@ def updatedb(config=None):
 
             if config['verbose'] == 1 and curcat != lastcat:
                 if lastcat != False:
-                    print duration(cattime)
-                print bold(" * " + curcat) + ":",
+                    print(duration(cattime))
+                print(bold(" * " + curcat) + ":", end=' ')
                 cattime = time()
                 lastcat = curcat
 
@@ -206,10 +208,10 @@ def updatedb(config=None):
     except KeyboardInterrupt:
         dbfile.close()
         unlink(config['tmpfile'])
-        print ""
+        print("")
         return False
 
-    print ""
+    print("")
 
     dbfile.write(")")
     dbfile.close()
@@ -225,12 +227,12 @@ def updatedb(config=None):
         os.path.join(config['esearchdbdir'], config['esearchdbfile']) + "c"):
         config['esearchdbfile'] += "c"
 
-    print green(" *"), "esearch-index generated in", duration(start)
-    print green(" *"), "indexed", bold(str(numebuilds)), "ebuilds"
-    print green(" *"), "size of esearch-index:", \
+    print(green(" *"), "esearch-index generated in", duration(start))
+    print(green(" *"), "indexed", bold(str(numebuilds)), "ebuilds")
+    print(green(" *"), "size of esearch-index:", \
         bold(str(int(stat(
             os.path.join(config['esearchdbdir'], config['esearchdbfile'])
-            )[6]/1024)) + " kB")
+            )[6]/1024)) + " kB"))
     return True
 
 
@@ -239,9 +241,9 @@ def main():
         opts = getopt(sys.argv[1:], "hvqd:n",
             ["help", "verbose", "quiet", "directory=", "nocolor"]
             )
-    except GetoptError, error:
-        print red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)"
-        print
+    except GetoptError as error:
+        print(red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)")
+        print()
         sys.exit(1)
     config = parseopts(opts)
     success = updatedb(config)

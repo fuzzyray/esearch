@@ -11,6 +11,9 @@
 # Author: David Peter <davidpeter@web.de>
 #
 
+
+from __future__ import print_function
+
 import os
 import sys
 from getopt import getopt, GetoptError
@@ -21,7 +24,7 @@ import portage
 try:
     from portage.output import red, green, bold, darkgreen, nocolor, xtermTitle
 except ImportError:
-    print "Critical: portage imports failed!"
+    print("Critical: portage imports failed!")
     sys.exit(1)
 
 from esearch.common import (CONFIG, SyncOpts, outofdateerror, logfile_sync,
@@ -32,34 +35,34 @@ sys.path.append(tmp_path)
 
 
 def usage():
-    print "esync (%s) - Calls 'emerge sync' and 'eupdatedb' and shows updates" \
-        % version
-    print ""
-    print bold("Usage:"), "esync [", darkgreen("options"), "]"
-    print bold("Options:")
-    print darkgreen("  --help") + ", " + darkgreen("-h")
-    print "    Print this help message"
-    print ""
-    print darkgreen("  --webrsync") + ", " + darkgreen("-w")
-    print "    Use 'emerge-webrsync' instead of 'emerge --sync'"
-    print ""
-    print darkgreen("  --delta-webrsync") + ", " + darkgreen("-d")
-    print "    Use 'emerge-delta-webrsync' instead of 'emerge --sync'"
-    print ""
-    print darkgreen("  --metadata") + ", " + darkgreen("-m")
-    print "    Use 'emerge --metadata' instead of 'emerge --sync'"
-    print ""
-    print darkgreen("  --nocolor") + ", " + darkgreen("-n")
-    print "    Don't use ANSI codes for colored output"
-    print ""
-    print darkgreen("  --quiet") + ", " + darkgreen("-q")
-    print "    Less output (implies --nospinner)"
-    print ""
-    print darkgreen("  --verbose") + ", " + darkgreen("-v")
-    print "    Verbose output"
-    print ""
-    print darkgreen("  --nospinner") + ", " + darkgreen("-s")
-    print "    Don't display the remaining index count"
+    print("esync (%s) - Calls 'emerge sync' and 'eupdatedb' and shows updates" \
+        % version)
+    print("")
+    print(bold("Usage:"), "esync [", darkgreen("options"), "]")
+    print(bold("Options:"))
+    print(darkgreen("  --help") + ", " + darkgreen("-h"))
+    print("    Print this help message")
+    print("")
+    print(darkgreen("  --webrsync") + ", " + darkgreen("-w"))
+    print("    Use 'emerge-webrsync' instead of 'emerge --sync'")
+    print("")
+    print(darkgreen("  --delta-webrsync") + ", " + darkgreen("-d"))
+    print("    Use 'emerge-delta-webrsync' instead of 'emerge --sync'")
+    print("")
+    print(darkgreen("  --metadata") + ", " + darkgreen("-m"))
+    print("    Use 'emerge --metadata' instead of 'emerge --sync'")
+    print("")
+    print(darkgreen("  --nocolor") + ", " + darkgreen("-n"))
+    print("    Don't use ANSI codes for colored output")
+    print("")
+    print(darkgreen("  --quiet") + ", " + darkgreen("-q"))
+    print("    Less output (implies --nospinner)")
+    print("")
+    print(darkgreen("  --verbose") + ", " + darkgreen("-v"))
+    print("    Verbose output")
+    print("")
+    print(darkgreen("  --nospinner") + ", " + darkgreen("-s"))
+    print("    Don't display the remaining index count")
 
     sys.exit(0)
 
@@ -100,7 +103,7 @@ def emsg(msg, config):
         xtermTitle(msg)
     if config['verbose'] == -1:
         return
-    print green(" *"), msg
+    print(green(" *"), msg)
 
 
 def gettree(tree, config):
@@ -110,10 +113,10 @@ def gettree(tree, config):
         if os.path.exists(target):
             os.unlink(target)
         os.symlink("/var/cache/edb/esearchdb.pyc", target)
-    except OSError, e:
+    except OSError as e:
         if e.errno != 17:
-            print e
-            print ""
+            print(e)
+            print("")
             sys.exit(1)
     try:
         if tree == "old":
@@ -127,9 +130,9 @@ def gettree(tree, config):
         else:
             from esyncnewtree import db
     except ImportError:
-        print red(" * Error:"), "Could not find esearch-index. Please run", \
-            green("eupdatedb"), "as root first"
-        print ""
+        print(red(" * Error:"), "Could not find esearch-index. Please run", \
+            green("eupdatedb"), "as root first")
+        print("")
         sys.exit(1)
     os.unlink(target)
     return db
@@ -148,26 +151,26 @@ def sync(config):
         errorcode = os.system(config['syncprogram'] + " > " + logfile_sync + " 2>&1")
 
     if errorcode != 0:
-        print red(" * Error:"),\
+        print(red(" * Error:"),\
             "'" + config['syncprogram'] + "'",\
-             "failed, see", logfile_sync, "for errors"
-        print ""
+             "failed, see", logfile_sync, "for errors")
+        print("")
         return False
 
     if config['verbose'] >= 0:
-        print ""
+        print("")
         emsg("Doing 'eupdatedb' now", config)
-        print ""
+        print("")
 
     # run eupdatedb natively
     success = updatedb(config)
     if not success:
-        print ""
-        print red(" * Error:"), "running updatedb failed"
+        print("")
+        print(red(" * Error:"), "running updatedb failed")
         return False
 
     if config['verbose'] >= 0:
-        print ""
+        print("")
 
     tree_new = gettree("new", config)
 
@@ -182,13 +185,13 @@ def sync(config):
         old[pkg[1]] = pkg[3]
 
     emsg("Searching for changes", config)
-    print ""
+    print("")
 
     # alphabetic sort
-    items = new.items()
+    items = list(new.items())
     items.sort(lambda x, y: cmp(x[0], y[0]))
 
-    old_keys = old.keys()
+    old_keys = list(old.keys())
 
     haspkg = False
 
@@ -210,9 +213,9 @@ def main():
             ["help", "webrsync", "delta-webrsync",
             "nocolor", "verbose", "metadata", "nospinner",
             "quiet"])
-    except GetoptError, error:
-        print red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)"
-        print
+    except GetoptError as error:
+        print(red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)")
+        print()
         sys.exit(1)
 
     config = parseopts(opts)

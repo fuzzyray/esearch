@@ -7,6 +7,8 @@
 # Author: David Peter <davidpeter@web.de>
 #
 
+from __future__ import print_function
+
 from getopt import getopt, GetoptError
 import sys
 from os import listdir, getenv, system
@@ -21,7 +23,7 @@ try:
     from portage.output import bold, red, green, darkgreen, turquoise, blue, nocolor
     from portage import settings, pkgcmp, pkgsplit, portdb, best
 except ImportError:
-    print "Critical: portage imports failed!"
+    print("Critical: portage imports failed!")
     sys.exit(1)
 
 from esearch.common import (CONFIG, NORMAL, COMPACT, VERBOSE, EBUILDS, OWN, pkg_version,
@@ -30,42 +32,42 @@ from esearch.common import (CONFIG, NORMAL, COMPACT, VERBOSE, EBUILDS, OWN, pkg_
 
 
 def usage():
-    print "esearch (%s) - Replacement for 'emerge search' with search-index" % version
-    print ""
-    print bold("Usage:"), "esearch [", darkgreen("options"), "] pattern"
-    print bold("Options:")
-    print darkgreen("  --help") + ", " + darkgreen("-h")
-    print "    Print help message"
-    print ""
-    print darkgreen("  --searchdesc") + ", " + darkgreen("-S")
-    print "    Search package descriptions as well"
-    print ""
-    print darkgreen("  --fullname") + ", " + darkgreen("-F")
-    print "    Search packages full name (includes category)"
-    print ""
-    print darkgreen("  --instonly") + ", " + darkgreen("-I")
-    print "    Find only packages which are installed"
-    print ""
-    print darkgreen("  --notinst") + ", " + darkgreen("-N")
-    print "    Find only packages which are not installed"
-    print ""
-    print darkgreen("  --compact") + ", " + darkgreen("-c")
-    print "    More compact output format"
-    print ""
-    print darkgreen("  --verbose") + ", " + darkgreen("-v")
-    print "    Give a lot of additional information (slow!)"
-    print ""
-    print darkgreen("  --ebuild") + ", " + darkgreen("-e")
-    print "    View ebuilds of found packages"
-    print ""
-    print darkgreen("  --own=") + "format" + ", " + darkgreen("-o"), "format"
-    print "    Use your own output format, see manpage for details of format"
-    print ""
-    print darkgreen("  --directory=") + "dir" + ", " + darkgreen("-d"), "dir"
-    print "    Use dir as directory to load esearch index from"
-    print ""
-    print darkgreen("  --nocolor") + ", " + darkgreen("-n")
-    print "    Don't use ANSI codes for colored output"
+    print("esearch (%s) - Replacement for 'emerge search' with search-index" % version)
+    print("")
+    print(bold("Usage:"), "esearch [", darkgreen("options"), "] pattern")
+    print(bold("Options:"))
+    print(darkgreen("  --help") + ", " + darkgreen("-h"))
+    print("    Print help message")
+    print("")
+    print(darkgreen("  --searchdesc") + ", " + darkgreen("-S"))
+    print("    Search package descriptions as well")
+    print("")
+    print(darkgreen("  --fullname") + ", " + darkgreen("-F"))
+    print("    Search packages full name (includes category)")
+    print("")
+    print(darkgreen("  --instonly") + ", " + darkgreen("-I"))
+    print("    Find only packages which are installed")
+    print("")
+    print(darkgreen("  --notinst") + ", " + darkgreen("-N"))
+    print("    Find only packages which are not installed")
+    print("")
+    print(darkgreen("  --compact") + ", " + darkgreen("-c"))
+    print("    More compact output format")
+    print("")
+    print(darkgreen("  --verbose") + ", " + darkgreen("-v"))
+    print("    Give a lot of additional information (slow!)")
+    print("")
+    print(darkgreen("  --ebuild") + ", " + darkgreen("-e"))
+    print("    View ebuilds of found packages")
+    print("")
+    print(darkgreen("  --own=") + "format" + ", " + darkgreen("-o"), "format")
+    print("    Use your own output format, see manpage for details of format")
+    print("")
+    print(darkgreen("  --directory=") + "dir" + ", " + darkgreen("-d"), "dir")
+    print("    Use dir as directory to load esearch index from")
+    print("")
+    print(darkgreen("  --nocolor") + ", " + darkgreen("-n"))
+    print("    Don't use ANSI codes for colored output")
 
     sys.exit(0)
 
@@ -233,7 +235,7 @@ def searchdb(config, patterns, db=None):
                         try:
                             iuse_split = portdb.aux_get(pkg[1] + "-" +  pkg[3], ["IUSE"])[0].split()
                         except KeyError:
-                            print "Package %s is no longer in the portage tree." % pkg[1] + "-" + pkg[3]
+                            print("Package %s is no longer in the portage tree." % pkg[1] + "-" + pkg[3])
                             continue
                         iuse_split.sort()
                         iuse = ""
@@ -339,23 +341,23 @@ def searchdb(config, patterns, db=None):
 
     for regex, pattern, output, count in regexlist:
         if config['outputm'] == NORMAL:
-            print "[ Results for search key :", bold(pattern), "]"
-            print "[ Applications found :", bold(str(count)), "]\n"
+            print("[ Results for search key :", bold(pattern), "]")
+            print("[ Applications found :", bold(str(count)), "]\n")
 
         try:
-            print output,
+            print(output, end=' ')
         except IOError:
             pass
 
         if config['outputm'] == NORMAL:
-            print ""
+            print("")
 
 
     if config['outputm'] == EBUILDS:
         if config['overlay'] and config['found_in_overlay']:
             repo_num=1
             for repo in config['overlay'].split():
-                print red("Overlay "+str(repo_num)+" : "+repo)
+                print(red("Overlay "+str(repo_num)+" : "+repo))
                 repo_num += 1
 
         if count != 0:
@@ -366,9 +368,9 @@ def searchdb(config, patterns, db=None):
                 nr = 1
             else:
                 if data['defebuild'][0] != 0:
-                    print bold("\nShow Ebuild"), " (" + darkgreen(data['defebuild'][0]) + "): ",
+                    print(bold("\nShow Ebuild"), " (" + darkgreen(data['defebuild'][0]) + "): ", end=' ')
                 else:
-                    print bold("\nShow Ebuild: "),
+                    print(bold("\nShow Ebuild: "), end=' ')
                 try:
                     nr = sys.stdin.readline()
                 except KeyboardInterrupt:
@@ -378,16 +380,16 @@ def searchdb(config, patterns, db=None):
                 if editor:
                     system(editor + " " + data['ebuilds'][int(nr) - 1])
                 else:
-                    print ""
+                    print("")
                     error("Please set EDITOR", False)
             except IndexError:
-                print ""
+                print("")
                 error("No such ebuild", False)
             except ValueError:
                 if data['defebuild'][0] != 0:
                     system(editor + " " + data['defebuild'][1])
                 else:
-                    print ""
+                    print("")
                     error("Please enter a valid number", False)
     return True
 
@@ -398,9 +400,9 @@ def main():
             ["help", "searchdesc", "fullname", "instonly", "notinst",
              "compact", "verbose", "ebuild", "own=", "directory=", "nocolor"
             ])
-    except GetoptError, errmsg:
+    except GetoptError as errmsg:
         error(str(errmsg) + " (see " + darkgreen("--help") + " for all options)")
-        print
+        print()
         sys.exit(1)
     config = parseopts(opts)
     db = loaddb(config)

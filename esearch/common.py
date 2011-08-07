@@ -6,6 +6,8 @@
 # Author: David Peter <davidpeter@web.de>
 #
 
+from __future__ import print_function
+
 import sys
 from portage import catpkgsplit
 from portage.output import red, green
@@ -79,7 +81,7 @@ def outofdateerror():
 
 
 def error(msg, fatal = True):
-    print red(" * Error:"), msg
-    print
+    print(red(" * Error:"), msg)
+    print()
     if fatal:
         sys.exit(1)
