@@ -145,7 +145,7 @@ def updatedb(config=None):
         return False
     dbfile = fdopen(dbfd, "w")
     dbfile.write("dbversion = " + str(config['needdbversion']) + "\n")
-    dbfile.write("db = (")
+    dbfile.write("db = (\n")
 
     if not config['verbose']:
         config['stdout'].write(green(" * ") + "indexing: ")
@@ -185,7 +185,7 @@ def updatedb(config=None):
             if len(pkgv) > 1:
                 filesize = getfetchsize(pkgv)
             else:
-                filesize = 0
+                filesize = '0'
 
             (curcat, pkgname) = pkg.split("/")
 
@@ -196,15 +196,19 @@ def updatedb(config=None):
                 cattime = time()
                 lastcat = curcat
 
-            dbfile.write(repr((pkgname,
-                            pkg,
+            installed = pkg_version(VARTREE.dep_bestmatch(pkg))
+            if installed:
+                installed = str(installed)
+
+            dbfile.write(repr((str(pkgname),
+                            str(pkg),
                             masked,
-                            pkg_version(pkgv),
-                            pkg_version(VARTREE.dep_bestmatch(pkg)),
-                            filesize,
-                            homepage,
-                            description,
-                            _license)) + ",")
+                            str(pkg_version(pkgv)),
+                            installed,
+                            str(filesize),
+                            str(homepage),
+                            str(description),
+                            str(_license))) + str(",\n"))
     except KeyboardInterrupt:
         dbfile.close()
         unlink(config['tmpfile'])
