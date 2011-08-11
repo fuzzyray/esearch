@@ -12,12 +12,13 @@ import sys
 from portage import catpkgsplit
 from portage.output import red, green
 
+from . import __version__
+
 # Load EPREFIX from Portage, fall back to the empty string if it fails
 try:
     from portage.const import EPREFIX
 except ImportError:
     EPREFIX = ''
-
 
 NORMAL =  1
 COMPACT = 2
@@ -70,7 +71,7 @@ CONFIG = {
     }
 
 
-version = 'git-0.8'
+version = __version__
 
 
 # get the version from a string like 'foo-bar/bar-0.4_rc2-r1'
