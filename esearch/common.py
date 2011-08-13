@@ -40,6 +40,7 @@ CONFIG = {
     # current esearch database version
     'needdbversion': 63,
     'stdout': sys.stdout,
+    'stderr': sys.stderr,
     'outputm': NORMAL,
     'searchdesc': False,
     'fullname': False,
@@ -76,12 +77,13 @@ def pkg_version(pkg):
         return False
 
 
-def outofdateerror():
-    error("The version of the esearch index is out of date, please run " + green("eupdatedb"))
+def outofdateerror(stderr=CONFIG['stderr']):
+    error("The version of the esearch index is out of date, please run " +
+        green("eupdatedb"), stderr=stderr)
 
 
-def error(msg, fatal = True):
-    print(red(" * Error:"), msg)
-    print()
+def error(msg, fatal=True, stderr=CONFIG['stderr']):
+    print(red(" * Error:"), msg, file=stderr)
+    print('', file=stderr)
     if fatal:
         sys.exit(1)

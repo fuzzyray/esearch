@@ -143,7 +143,8 @@ def parseopts(opts, config=None):
         elif arg in ("-d", "--directory"):
             config['esearchdbdir'] = a[1]
             if not exists(config['esearchdbdir']):
-                error("directory '" + darkgreen(config['esearchdbdir']) + "' does not exist.")
+                error("directory '" + darkgreen(config['esearchdbdir']) +
+                    "' does not exist.", stderr=config['stderr'])
         elif arg in ("-n", "--nocolor"):
             nocolor()
     return config
@@ -158,11 +159,12 @@ def loaddb(config):
         try:
             from esearchdb import dbversion
             if dbversion < config['needdbversion']:
-                outofdateerror()
+                outofdateerror(config['stderr'])
         except ImportError:
-            outofdateerror()
+            outofdateerror(config['stderr'])
     except ImportError:
-        error("Could not find esearch-index. Please run " + green("eupdatedb") + " as root first")
+        error("Could not find esearch-index. Please run " +
+            green("eupdatedb") + " as root first", stderr=config['stderr'])
     return db
 
 
@@ -173,7 +175,8 @@ def searchdb(config, patterns, db=None):
     data['defebuild'] = (0, 0)
 
     if config['fullname'] and config['searchdesc']:
-        error("Please use either " + darkgreen("--fullname") + " or " + darkgreen("--searchdesc"))
+        error("Please use either " + darkgreen("--fullname") +
+            " or " + darkgreen("--searchdesc"), stderr=config['stderr'])
 
 
     regexlist = []
@@ -187,7 +190,7 @@ def searchdb(config, patterns, db=None):
         try:
             regexlist.append([re.compile(pattern, re.IGNORECASE), pattern, "", 0])
         except re.error:
-            error("Invalid regular expression.")
+            error("Invalid regular expression.", stderr=config['stderr'])
             sys.exit(1)
 
     # Could also loop through all packages only once, and remember which
@@ -381,16 +384,17 @@ def searchdb(config, patterns, db=None):
                     system(editor + " " + data['ebuilds'][int(nr) - 1])
                 else:
                     print("")
-                    error("Please set EDITOR", False)
+                    error("Please set EDITOR", False, stderr=config['stderr'])
             except IndexError:
-                print("")
-                error("No such ebuild", False)
+                print("", file=config['stderr'])
+                error("No such ebuild", False, stderr=config['stderr'])
             except ValueError:
                 if data['defebuild'][0] != 0:
                     system(editor + " " + data['defebuild'][1])
                 else:
-                    print("")
-                    error("Please enter a valid number", False)
+                    print("", file=config['stderr'])
+                    error("Please enter a valid number", False,
+                        stderr=config['stderr'])
     return True
 
 
@@ -402,8 +406,6 @@ def main():
             ])
     except GetoptError as errmsg:
         error(str(errmsg) + " (see " + darkgreen("--help") + " for all options)")
-        print()
-        sys.exit(1)
     config = parseopts(opts)
     db = loaddb(config)
     success = searchdb(config, opts[1], db)

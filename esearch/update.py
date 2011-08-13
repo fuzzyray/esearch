@@ -31,7 +31,7 @@ except ImportError:
     print("Critical: portage imports failed!")
     sys.exit(1)
 
-from esearch.common import version, CONFIG, pkg_version
+from esearch.common import version, CONFIG, pkg_version, error
 
 
 
@@ -107,11 +107,8 @@ def parseopts(opts, config=None):
         elif arg in ("-d", "--directory"):
             config['esearchdbdir'] = a[1]
             if not exists(config['esearchdbdir']):
-                print(red(" * Error:"), "directory '" + \
-                    darkgreen(config['esearchdbdir']) + "'", "does not exist.")
-                print("")
-                sys.exit(1)
-
+                error("directory '" + darkgreen(config['esearchdbdir']) +
+                    "'", "does not exist.", stderr=config['stderr'])
         elif arg in ("-n", "--nocolor"):
             nocolor()
     return config
@@ -120,28 +117,32 @@ def parseopts(opts, config=None):
 def updatedb(config=None):
 
     if not os.access(config['esearchdbdir'], os.W_OK):
-        print(red("Warning:"), \
-            "You do not have sufficient permissions to save the index file in:",\
-            green(config['esearchdbdir']))
+        print(red("Warning:"),
+            "You do not have sufficient permissions to save the index file in:",
+            green(config['esearchdbdir']), file=config['stderr'])
         return False
 
     if config['verbose'] != -1 and "ACCEPT_KEYWORDS" in environ:
-        print(red("Warning:"), \
-            "You have set ACCEPT_KEYWORDS in environment, this will result")
-        print("         in a modified index file")
+        print(red("Warning:"),
+            "You have set ACCEPT_KEYWORDS in environment, this will result",
+            file=config['stdout'])
+        print("         in a modified index file", file=config['stdout'])
 
     ebuilds = portage.portdb.cp_all()
     numebuilds = len(ebuilds)
 
     if exists(config['tmpfile']):
-        print(red("Error: "), " there is probably another eupdatedb running already.")
-        print("         If you're sure there is no other process, remove", config['tmpfile'])
-        print("")
+        print(red("Error: "), " there is probably another eupdatedb running "
+            "already.", file=config['stderr'])
+        print("         If you're sure there is no other process, remove",
+            config['tmpfile'], file=config['stderr'])
+        print("", file=config['stderr'])
         return False
     try:
         dbfd = open(config['tmpfile'], O_CREAT | O_EXCL | O_WRONLY, 0o600)
     except OSError:
-        print(red("Error: "), " failed to open temporary file.")
+        print(red("Error: "), " failed to open temporary file.",
+            file=config['stderr'])
         return False
     dbfile = fdopen(dbfd, "w")
     dbfile.write("dbversion = " + str(config['needdbversion']) + "\n")
@@ -191,8 +192,8 @@ def updatedb(config=None):
 
             if config['verbose'] == 1 and curcat != lastcat:
                 if lastcat != False:
-                    print(duration(cattime))
-                print(bold(" * " + curcat) + ":", end=' ')
+                    print(duration(cattime), file=config['stdout'])
+                print(bold(" * " + curcat) + ":", end=' ', file=config['stdout'])
                 cattime = time()
                 lastcat = curcat
 
@@ -212,10 +213,10 @@ def updatedb(config=None):
     except KeyboardInterrupt:
         dbfile.close()
         unlink(config['tmpfile'])
-        print("")
+        print("", file=config['stdout'])
         return False
 
-    print("")
+    print("", file=config['stdout'])
 
     dbfile.write(")")
     dbfile.close()
@@ -231,12 +232,14 @@ def updatedb(config=None):
         os.path.join(config['esearchdbdir'], config['esearchdbfile']) + "c"):
         config['esearchdbfile'] += "c"
 
-    print(green(" *"), "esearch-index generated in", duration(start))
-    print(green(" *"), "indexed", bold(str(numebuilds)), "ebuilds")
-    print(green(" *"), "size of esearch-index:", \
+    print(green(" *"), "esearch-index generated in", duration(start),
+        file=config['stdout'])
+    print(green(" *"), "indexed", bold(str(numebuilds)), "ebuilds",
+        file=config['stdout'])
+    print(green(" *"), "size of esearch-index:",
         bold(str(int(stat(
             os.path.join(config['esearchdbdir'], config['esearchdbfile'])
-            )[6]/1024)) + " kB"))
+            )[6]/1024)) + " kB"), file=config['stdout'])
     return True
 
 
@@ -246,10 +249,9 @@ def main():
             ["help", "verbose", "quiet", "directory=", "nocolor"]
             )
     except GetoptError as error:
-        print(red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)")
-        print()
-        sys.exit(1)
-    config = parseopts(opts)
+        error(error + "(see" + darkgreen("--help") +
+            "for all options)" + '\n')
+     config = parseopts(opts)
     success = updatedb(config)
     # sys.exit() values are opposite T/F
     sys.exit(not success)
