@@ -28,7 +28,7 @@ except ImportError:
     sys.exit(1)
 
 from esearch.common import (CONFIG, SyncOpts, outofdateerror, logfile_sync,
-    tmp_path, tmp_prefix, version)
+    tmp_path, tmp_prefix, version, EPREFIX)
 from esearch.update import updatedb
 
 sys.path.append(tmp_path)
@@ -108,11 +108,15 @@ def emsg(msg, config):
 
 def gettree(tree, config):
     emsg("Importing " + tree + " portage tree", config)
+    if '.pyc' in config['esearchdbfile']:
+        dbfile = config['esearchdbfile']
+    else:
+        dbfile = config['esearchdbfile'] + 'c'
     try:
         target = tmp_prefix + tree + "tree.pyc"
         if os.path.exists(target):
             os.unlink(target)
-        os.symlink("/var/cache/edb/esearchdb.pyc", target)
+        os.symlink(os.path.join(config['esearchdbdir'], dbfile), target)
     except OSError as e:
         if e.errno != 17:
             print(e)
@@ -198,7 +202,7 @@ def sync(config):
     for (pkg, version) in items:
         if (pkg not in old_keys) or (old[pkg] != new[pkg]):
             # migrate this to using searchdb() natively
-            os.system("/usr/bin/esearch " + config['eoptions'] + \
+            os.system(EPREFIX + "/usr/bin/esearch " + config['eoptions'] + \
                 " -Fc ^" + pkg + "$ | head -n1")
             haspkg = True
 

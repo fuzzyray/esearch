@@ -12,6 +12,13 @@ import sys
 from portage import catpkgsplit
 from portage.output import red, green
 
+# Load EPREFIX from Portage, fall back to the empty string if it fails
+try:
+    from portage.const import EPREFIX
+except ImportError:
+    EPREFIX = ''
+
+
 NORMAL =  1
 COMPACT = 2
 VERBOSE = 3
@@ -20,19 +27,22 @@ OWN =     5
 
 
 SyncOpts = {
-    "sync": "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge --sync",
-    "webrsync": "EMERGE_DEFAULT_OPTS=\"\" /usr/sbin/emerge-webrsync",
-    "delta-webrsync": "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge-delta-webrsync -u",
-    "metadata": "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge --metadata"
+    "sync": "EMERGE_DEFAULT_OPTS=\"\" %s/usr/bin/emerge --sync" % EPREFIX,
+    "webrsync":
+        "EMERGE_DEFAULT_OPTS=\"\" %s/usr/sbin/emerge-webrsync" % EPREFIX,
+    "delta-webrsync":
+        "EMERGE_DEFAULT_OPTS=\"\" %s/usr/bin/emerge-delta-webrsync -u" % EPREFIX,
+    "metadata":
+        "EMERGE_DEFAULT_OPTS=\"\" %s/usr/bin/emerge --metadata" % EPREFIX
 }
 
-logfile_sync =  "/var/log/emerge-sync.log"
+logfile_sync =  EPREFIX + "/var/log/emerge-sync.log"
 tmp_path = "/tmp"
 tmp_prefix = tmp_path + "/esync"
 
 
 CONFIG = {
-    'esearchdbdir': "/var/cache/edb/",
+    'esearchdbdir': EPREFIX + "/var/cache/edb/",
     'esearchdbfile': "esearchdb.py",
     'tmpfile': tmp_path + "/esearchdb.py.tmp",
     # -1==quiet, 0==normal, +1==verbose
