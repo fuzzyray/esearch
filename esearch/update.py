@@ -251,7 +251,7 @@ def main():
     except GetoptError as error:
         error(error + "(see" + darkgreen("--help") +
             "for all options)" + '\n')
-     config = parseopts(opts)
+    config = parseopts(opts)
     success = updatedb(config)
     # sys.exit() values are opposite T/F
     sys.exit(not success)
