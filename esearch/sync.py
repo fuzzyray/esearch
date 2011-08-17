@@ -28,8 +28,9 @@ except ImportError:
     sys.exit(1)
 
 from esearch.common import (CONFIG, SyncOpts, outofdateerror, logfile_sync,
-    tmp_path, tmp_prefix, version, EPREFIX)
+    tmp_path, tmp_prefix, version, EPREFIX, COMPACT)
 from esearch.update import updatedb
+from esearch.search import searchdb
 
 sys.path.append(tmp_path)
 
@@ -199,11 +200,13 @@ def sync(config):
 
     haspkg = False
 
+    # update our config to run searchdb
+    config['outputm'] = COMPACT
+    config['fullname'] = True
+
     for (pkg, version) in items:
         if (pkg not in old_keys) or (old[pkg] != new[pkg]):
-            # migrate this to using searchdb() natively
-            os.system(EPREFIX + "/usr/bin/esearch " + config['eoptions'] + \
-                " -Fc ^" + pkg + "$ | head -n1")
+            success = searchdb(config, pkg, new)
             haspkg = True
 
     if not haspkg:
