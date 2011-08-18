@@ -86,7 +86,6 @@ def parseopts(opts, config=None):
         elif arg in ("-m", "--metadata"):
             config['syncprogram'] = SyncOpts["metadata"]
         elif arg in ("-n", "--nocolor"):
-            config['eoptions'] = "-n"
             nocolor()
             config['showtitles'] = False
         elif arg in ("-q", "--quiet"):
@@ -206,7 +205,7 @@ def sync(config):
 
     for (pkg, version) in items:
         if (pkg not in old_keys) or (old[pkg] != new[pkg]):
-            success = searchdb(config, pkg, new)
+            success = searchdb(config, pkg, tree_new)
             haspkg = True
 
     if not haspkg:

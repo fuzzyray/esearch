@@ -59,7 +59,6 @@ CONFIG = {
     'notinst': False,
     'found_in_overlay': False,
     'syncprogram': SyncOpts['sync'],
-    'eoptions': '',
     'eupdatedb_extra_options': '',
     # too time comsuming to import & get it from portage here
     # just set a default
