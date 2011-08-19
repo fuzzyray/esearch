@@ -109,14 +109,14 @@ def emsg(msg, config):
 def gettree(tree, config):
     emsg("Importing " + tree + " portage tree", config)
     if '.pyc' in config['esearchdbfile']:
-        dbfile = config['esearchdbfile']
+        ext = ".pyc"
     else:
-        dbfile = config['esearchdbfile'] + 'c'
+        ext = ".py"
     try:
-        target = tmp_prefix + tree + "tree.pyc"
+        target = tmp_prefix + tree + "tree" + ext
         if os.path.exists(target):
             os.unlink(target)
-        os.symlink(os.path.join(config['esearchdbdir'], dbfile), target)
+        os.symlink(os.path.join(config['esearchdbdir'], config['esearchdbfile']), target)
     except OSError as e:
         if e.errno != 17:
             print(e)
@@ -134,7 +134,8 @@ def gettree(tree, config):
         else:
             from esyncnewtree import db
     except ImportError:
-        print(red(" * Error:"), "Could not find esearch-index. Please run", \
+        print(red(" * Error:"), "Could not find " + tree +
+            "esearch-index. Please run",
             green("eupdatedb"), "as root first")
         print("")
         sys.exit(1)
@@ -176,7 +177,8 @@ def sync(config):
     if config['verbose'] >= 0:
         print("")
 
-    tree_new = gettree("new", config)
+    from esearchdb import db as tree_new
+    #tree_new = gettree("new", config)
 
     emsg("Preparing databases", config)
 
@@ -197,20 +199,35 @@ def sync(config):
 
     old_keys = list(old.keys())
 
-    haspkg = False
-
     # update our config to run searchdb
     config['outputm'] = COMPACT
     config['fullname'] = True
 
+    #individual pkgname search method
+    haspkgs = False
     for (pkg, version) in items:
         if (pkg not in old_keys) or (old[pkg] != new[pkg]):
-            success = searchdb(config, pkg, tree_new)
-            haspkg = True
+            success = searchdb(config, ["^" + pkg + "$"], tree_new)
+            haspkgs = True
 
-    if not haspkg:
+    if not haspkgs:
         emsg("No updates found", config)
-    return True
+        success = True
+
+    # multiple pkg search method
+    # build our re search list
+    #pkg_patterns = []
+    #for (pkg, version) in items:
+        #if (pkg not in old_keys) or (old[pkg] != new[pkg]):
+            #pkg_patterns.append("^" + pkg + "$")
+
+    #if pkg_patterns == []:
+        #emsg("No updates found", config)
+        #success = True
+    #else:
+        #success = searchdb(config, pkg_patterns, tree_new)
+
+    return success
 
 
 def main():
