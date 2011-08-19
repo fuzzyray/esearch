@@ -167,6 +167,111 @@ def loaddb(config):
             green("eupdatedb") + " as root first", stderr=config['stderr'])
     return db
 
+def do_compact(pkg):
+    prefix0 = " "
+    prefix1 = " "
+
+    if pkg[3] == pkg[4]:
+        color = darkgreen
+        prefix1 = "I"
+    elif not pkg[4]:
+        color = darkgreen
+        prefix1 = "N"
+    else:
+        color = turquoise
+        prefix1 = "U"
+
+    if pkg[2]:
+        prefix0 = "M"
+
+    return " [%s%s] %s (%s):  %s\n" % \
+            (red(prefix0), color(prefix1), bold(pkg[1]), color(pkg[3]), pkg[7])
+
+def do_normal(pkg, verbose):
+    data = []
+    if not pkg[4]:
+        installed = "[ Not Installed ]"
+    else:
+        installed = pkg[4]
+
+    if pkg[2]:
+        masked = red(" [ Masked ]")
+    else:
+        masked = ""
+
+    data.append("%s  %s%s\n      %s %s\n      %s %s\n" % \
+            (green("*"), bold(pkg[1]), masked,
+            darkgreen("Latest version available:"), pkg[3],
+            darkgreen("Latest version installed:"), installed))
+
+    if verbose:
+        mpv = best(portdb.xmatch("match-all", pkg[1]))
+        try:
+            iuse_split = portdb.aux_get(pkg[1] + "-" +  pkg[3], ["IUSE"])[0].split()
+        except KeyError:
+            print("Package %s is no longer in the portage tree." % pkg[1] + "-" + pkg[3])
+            return data, True
+        iuse_split.sort()
+        iuse = ""
+
+        for ebuild_iuse in iuse_split:
+            if not ebuild_iuse:
+                return data, True
+            if ebuild_iuse in settings["USE"]:
+                iuse += red("+" + ebuild_iuse) + " "
+            else:
+                iuse += blue("-" + ebuild_iuse) + " "
+
+        if iuse == "":
+            iuse = "-"
+
+        data.append("      %s         %s\n      %s       %s\n" % \
+                (darkgreen("Unstable version:"), pkg_version(mpv),
+                 darkgreen("Use Flags (stable):"), iuse))
+
+    data.append("      %s %s\n      %s    %s\n      %s %s\n      %s     %s\n\n" % \
+            (darkgreen("Size of downloaded files:"), pkg[5],
+             darkgreen("Homepage:"), pkg[6],
+             darkgreen("Description:"), pkg[7],
+             darkgreen("License:"), pkg[8]))
+    return data, False
+
+def do_own(pkg, own):
+    # %c => category
+    # %n => package name
+    # %p => same as %c/%n
+    # %m => masked
+    # %va => latest version available
+    # %vi => latest version installed
+    # %s => size of downloaded files
+    # %h => homepage
+    # %d => description
+    # %l => license
+
+
+    own = own.replace("%c", pkg[1].split("/")[0])
+    own = own.replace("%n", pkg[0])
+    own = own.replace("%p", pkg[1])
+
+    masked = ""
+    if pkg[2]:
+        masked = "masked"
+    own = own.replace("%m", masked)
+    own = own.replace("%va", pkg[3])
+
+    installed = pkg[4]
+    if not installed:
+        installed = ""
+    own = own.replace("%vi", installed)
+    own = own.replace("%s", pkg[5])
+    own = own.replace("%h", pkg[6])
+    own = own.replace("%d", pkg[7])
+    own = own.replace("%l", pkg[8])
+
+    own = own.replace("\\n", "\n")
+    own = own.replace("\\t", "\t")
+    return o
+
 
 def searchdb(config, patterns, db=None):
 
@@ -218,107 +323,16 @@ def searchdb(config, patterns, db=None):
 
             if found:
                 if config['outputm'] in (NORMAL, VERBOSE):
-                    if not pkg[4]:
-                        installed = "[ Not Installed ]"
-                    else:
-                        installed = pkg[4]
-
-                    if pkg[2]:
-                        masked = red(" [ Masked ]")
-                    else:
-                        masked = ""
-
-                    data['output'].append("%s  %s%s\n      %s %s\n      %s %s\n" % \
-                            (green("*"), bold(pkg[1]), masked,
-                            darkgreen("Latest version available:"), pkg[3],
-                            darkgreen("Latest version installed:"), installed))
-
-                    if config['outputm'] == VERBOSE:
-                        mpv = best(portdb.xmatch("match-all", pkg[1]))
-                        try:
-                            iuse_split = portdb.aux_get(pkg[1] + "-" +  pkg[3], ["IUSE"])[0].split()
-                        except KeyError:
-                            print("Package %s is no longer in the portage tree." % pkg[1] + "-" + pkg[3])
-                            continue
-                        iuse_split.sort()
-                        iuse = ""
-
-                        for ebuild_iuse in iuse_split:
-                            if not ebuild_iuse:
-                                continue
-                            if ebuild_iuse in settings["USE"]:
-                                iuse += red("+" + ebuild_iuse) + " "
-                            else:
-                                iuse += blue("-" + ebuild_iuse) + " "
-
-                        if iuse == "":
-                            iuse = "-"
-
-                        data['output'].append("      %s         %s\n      %s       %s\n" % \
-                                (darkgreen("Unstable version:"), pkg_version(mpv),
-                                 darkgreen("Use Flags (stable):"), iuse))
-
-                    data['output'].append("      %s %s\n      %s    %s\n      %s %s\n      %s     %s\n\n" % \
-                            (darkgreen("Size of downloaded files:"), pkg[5],
-                             darkgreen("Homepage:"), pkg[6],
-                             darkgreen("Description:"), pkg[7],
-                             darkgreen("License:"), pkg[8]))
-
+                    newdata, _continue = do_normal(pkg,
+                        config['outputm'] == VERBOSE)
+                    data['output'] += newdata
+                    if _continue:
+                        continue
                 elif config['outputm'] in (COMPACT, EBUILDS):
-                    prefix0 = " "
-                    prefix1 = " "
-
-                    if pkg[3] == pkg[4]:
-                        color = darkgreen
-                        prefix1 = "I"
-                    elif not pkg[4]:
-                        color = darkgreen
-                        prefix1 = "N"
-                    else:
-                        color = turquoise
-                        prefix1 = "U"
-
-                    if pkg[2]:
-                        prefix0 = "M"
-
-                    data['output'].append("[%s%s] %s (%s):  %s\n" % \
-                            (red(prefix0), color(prefix1), bold(pkg[1]), color(pkg[3]), pkg[7]))
+                    data['output'].append(do_compact(pkg))
 
                 elif config['outputm'] == OWN:
-                    # %c => category
-                    # %n => package name
-                    # %p => same as %c/%n
-                    # %m => masked
-                    # %va => latest version available
-                    # %vi => latest version installed
-                    # %s => size of downloaded files
-                    # %h => homepage
-                    # %d => description
-                    # %l => license
-
-                    o = config['outputf']
-                    o = o.replace("%c", pkg[1].split("/")[0])
-                    o = o.replace("%n", pkg[0])
-                    o = o.replace("%p", pkg[1])
-
-                    masked = ""
-                    if pkg[2]:
-                        masked = "masked"
-                    o = o.replace("%m", masked)
-                    o = o.replace("%va", pkg[3])
-
-                    installed = pkg[4]
-                    if not installed:
-                        installed = ""
-                    o = o.replace("%vi", installed)
-                    o = o.replace("%s", pkg[5])
-                    o = o.replace("%h", pkg[6])
-                    o = o.replace("%d", pkg[7])
-                    o = o.replace("%l", pkg[8])
-
-                    o = o.replace("\\n", "\n")
-                    o = o.replace("\\t", "\t")
-                    data['output'].append(o)
+                    data['output'].append(do_own(pkg, config['outputf']))
 
                 if config['outputm'] == EBUILDS:
                     if count == 0:
@@ -335,10 +349,10 @@ def searchdb(config, patterns, db=None):
                                 False, searchdef,repo_num, config, data)
                             repo_num += 1
 
-                    data['output'].append("\n")
+                    #data['output'].append("\n")
                 count += 1
 
-        regexlist[i][2] = "".join(data['output'])
+        regexlist[i][2] = "\n".join(data['output'])
         regexlist[i][3] = count
         i += 1
 
@@ -346,14 +360,14 @@ def searchdb(config, patterns, db=None):
         if config['outputm'] == NORMAL:
             print("[ Results for search key :", bold(pattern), "]")
             print("[ Applications found :", bold(str(count)), "]\n")
+            try:
+                print(output, end=' ')
+                print("")
+            except IOError:
+                pass
+        else:
+            print(output, end='')
 
-        try:
-            print(output, end=' ')
-        except IOError:
-            pass
-
-        if config['outputm'] == NORMAL:
-            print("")
 
 
     if config['outputm'] == EBUILDS:
