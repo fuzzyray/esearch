@@ -184,7 +184,7 @@ def do_compact(pkg):
     if pkg[2]:
         prefix0 = "M"
 
-    return " [%s%s] %s (%s):  %s\n" % \
+    return " [%s%s] %s (%s):  %s" % \
             (red(prefix0), color(prefix1), bold(pkg[1]), color(pkg[3]), pkg[7])
 
 def do_normal(pkg, verbose):
@@ -199,7 +199,7 @@ def do_normal(pkg, verbose):
     else:
         masked = ""
 
-    data.append("%s  %s%s\n      %s %s\n      %s %s\n" % \
+    data.append("%s  %s%s\n      %s %s\n      %s %s" % \
             (green("*"), bold(pkg[1]), masked,
             darkgreen("Latest version available:"), pkg[3],
             darkgreen("Latest version installed:"), installed))
@@ -225,11 +225,11 @@ def do_normal(pkg, verbose):
         if iuse == "":
             iuse = "-"
 
-        data.append("      %s         %s\n      %s       %s\n" % \
+        data.append("      %s         %s\n      %s       %s" % \
                 (darkgreen("Unstable version:"), pkg_version(mpv),
                  darkgreen("Use Flags (stable):"), iuse))
 
-    data.append("      %s %s\n      %s    %s\n      %s %s\n      %s     %s\n\n" % \
+    data.append("      %s %s\n      %s    %s\n      %s %s\n      %s     %s\n" % \
             (darkgreen("Size of downloaded files:"), pkg[5],
              darkgreen("Homepage:"), pkg[6],
              darkgreen("Description:"), pkg[7],
@@ -270,7 +270,7 @@ def do_own(pkg, own):
 
     own = own.replace("\\n", "\n")
     own = own.replace("\\t", "\t")
-    return o
+    return own
 
 
 def searchdb(config, patterns, db=None):
@@ -293,7 +293,9 @@ def searchdb(config, patterns, db=None):
         else:
             pattern = re.sub("\+\+", "\+\+", pattern)
         try:
-            regexlist.append([re.compile(pattern, re.IGNORECASE), pattern, "", 0])
+            regexlist.append([re.compile(pattern, re.IGNORECASE), pattern,
+                "", 0, (config['fullname'] or '/' in pattern)
+                and not config['searchdesc']])
         except re.error:
             error("Invalid regular expression.", stderr=config['stderr'])
             sys.exit(1)
@@ -303,7 +305,7 @@ def searchdb(config, patterns, db=None):
     # => probably faster
 
     i = 0
-    for regex, pattern, foo, foo in regexlist:
+    for regex, pattern, foo, foo, fullname in regexlist:
         count = 0
         data['output'] = []
         for pkg in db:
@@ -314,9 +316,9 @@ def searchdb(config, patterns, db=None):
             elif config['notinst'] and pkg[4]:
                 continue
 
-            if (config['fullname'] or '/' in pattern) and regex.search(pkg[1]):
+            if  fullname and regex.search(pkg[1]):
                 found = True
-            elif not config['fullname'] and regex.search(pkg[0]):
+            elif not fullname and regex.search(pkg[0]):
                 found = True
             elif config['searchdesc'] and regex.search(pkg[7]):
                 found = True
@@ -356,7 +358,7 @@ def searchdb(config, patterns, db=None):
         regexlist[i][3] = count
         i += 1
 
-    for regex, pattern, output, count in regexlist:
+    for regex, pattern, output, count, foo in regexlist:
         if config['outputm'] == NORMAL:
             print("[ Results for search key :", bold(pattern), "]")
             print("[ Applications found :", bold(str(count)), "]\n")
@@ -366,7 +368,7 @@ def searchdb(config, patterns, db=None):
             except IOError:
                 pass
         else:
-            print(output, end='')
+            print(output)
 
 
 
