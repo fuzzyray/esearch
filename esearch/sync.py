@@ -177,8 +177,10 @@ def sync(config):
     if config['verbose'] >= 0:
         print("")
 
+    # uncomment the sys.path line below if you comment out the
+    # emerge sync code section for testing
+    #sys.path.insert(0, config['esearchdbdir'])
     from esearchdb import db as tree_new
-    #tree_new = gettree("new", config)
 
     emsg("Preparing databases", config)
 
@@ -214,7 +216,7 @@ def sync(config):
         emsg("No updates found", config)
         success = True
 
-    # multiple pkg search method
+    # multiple pkgname search method
     # build our re search list
     #pkg_patterns = []
     #for (pkg, version) in items:
