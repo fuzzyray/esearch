@@ -314,7 +314,7 @@ def searchdb(config, patterns, db=None):
             elif config['notinst'] and pkg[4]:
                 continue
 
-            if config['fullname'] and regex.search(pkg[1]):
+            if (config['fullname'] or '/' in pattern) and regex.search(pkg[1]):
                 found = True
             elif not config['fullname'] and regex.search(pkg[0]):
                 found = True
