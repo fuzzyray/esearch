@@ -290,9 +290,6 @@ def searchdb(config, patterns, db=None):
     for pattern in patterns:
         if pattern == "*":
             pattern = ".*"
-        elif '/' in pattern:  # full name?
-            config['fullname'] = not config['searchdesc']
-            pattern = re.sub("\+\+", "\+\+", pattern)
         else:
             pattern = re.sub("\+\+", "\+\+", pattern)
         try:
