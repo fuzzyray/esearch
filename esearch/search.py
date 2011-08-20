@@ -29,6 +29,10 @@ except ImportError:
 from esearch.common import (CONFIG, NORMAL, COMPACT, VERBOSE, EBUILDS, OWN, pkg_version,
     error, outofdateerror, version)
 
+# migrate this to the portage public api
+# when/if it is merged into master
+from esearch.flag import get_flags
+
 
 
 def usage():
@@ -206,22 +210,17 @@ def do_normal(pkg, verbose):
 
     if verbose:
         mpv = best(portdb.xmatch("match-all", pkg[1]))
-        try:
-            iuse_split = portdb.aux_get(pkg[1] + "-" +  pkg[3], ["IUSE"])[0].split()
-        except KeyError:
-            print("Package %s is no longer in the portage tree." % pkg[1] + "-" + pkg[3])
-            return data, True
-        iuse_split.sort()
+        iuse_split, final_use = get_flags(mpv, final_setting=True)
         iuse = ""
-
+        use_list = []
         for ebuild_iuse in iuse_split:
-            if not ebuild_iuse:
-                return data, True
-            if ebuild_iuse in settings["USE"]:
-                iuse += red("+" + ebuild_iuse) + " "
+            use = ebuild_iuse.lstrip('+-')
+            if use in final_use:
+                use_list.append(red("+" + use) + " ")
             else:
-                iuse += blue("-" + ebuild_iuse) + " "
-
+                use_list.append(blue("-" + use) + " ")
+        use_list.sort()
+        iuse = ' '.join(use_list)
         if iuse == "":
             iuse = "-"
 
