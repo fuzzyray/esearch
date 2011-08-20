@@ -358,7 +358,7 @@ def searchdb(config, patterns, db=None):
         i += 1
 
     for regex, pattern, output, count, foo in regexlist:
-        if config['outputm'] == NORMAL:
+        if config['outputm'] in (NORMAL, VERBOSE):
             print("[ Results for search key :", bold(pattern), "]")
             print("[ Applications found :", bold(str(count)), "]\n")
             try:
