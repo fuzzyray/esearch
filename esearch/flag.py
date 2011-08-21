@@ -12,21 +12,18 @@ from portage import settings as default_settings
 from portage import portdb
 
 
-def get_iuse(cpv, root=None, settings=default_settings):
+def get_iuse(cpv, settings=default_settings):
     """Gets the current IUSE flags from the tree
 
     To be used when a gentoolkit package object is not needed
     @type: cpv: string
     @param cpv: cat/pkg-ver
     @type root: string
-    @param root: tree root to use
     @param settings: optional portage config settings instance.
         defaults to portage.api.settings.default_settings
     @rtype list
     @returns [] or the list of IUSE flags
     """
-    if root is None:
-        root = settings["ROOT"]
     try:
         return portdb.aux_get(cpv, ["IUSE"])[0].split()
     except:
@@ -71,20 +68,16 @@ def filter_flags(use, use_expand_hidden, usemasked,
     return use
 
 
-def get_all_cpv_use(cpv, root=None, settings=default_settings):
+def get_all_cpv_use(cpv, settings=default_settings):
     """Uses portage to determine final USE flags and settings for an emerge
 
     @type cpv: string
     @param cpv: eg cat/pkg-ver
-    @type root: string
-    @param root: tree root to use
     @param settings: optional portage config settings instance.
         defaults to portage.api.settings.default_settings
     @rtype: lists
     @return  use, use_expand_hidden, usemask, useforce
     """
-    if root is None:
-        root = settings["ROOT"]
     use = None
     portdb.settings.unlock()
     try:
@@ -103,7 +96,7 @@ def get_all_cpv_use(cpv, root=None, settings=default_settings):
     return use, use_expand_hidden, usemask, useforce
 
 
-def get_flags(cpv, final_setting=False, root=None, settings=default_settings):
+def get_flags(cpv, final_setting=False, settings=default_settings):
     """Retrieves all information needed to filter out hidden, masked, etc.
     USE flags for a given package.
 
@@ -112,7 +105,6 @@ def get_flags(cpv, final_setting=False, root=None, settings=default_settings):
     @type final_setting: boolean
     @param final_setting: used to also determine the final
         enviroment USE flag settings and return them as well.
-    @type root: string
     @param root: pass through variable needed, tree root to use
         for other function calls.
     @param settings: optional portage config settings instance.
@@ -121,7 +113,7 @@ def get_flags(cpv, final_setting=False, root=None, settings=default_settings):
     @return IUSE or IUSE, final_flags
     """
     (final_use, use_expand_hidden, usemasked, useforced) = \
-        get_all_cpv_use(cpv, root, settings)
+        get_all_cpv_use(cpv, settings)
     iuse_flags = filter_flags(get_iuse(cpv), use_expand_hidden,
         usemasked, useforced, settings)
     #flags = filter_flags(use_flags, use_expand_hidden,
