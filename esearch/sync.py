@@ -28,7 +28,7 @@ except ImportError:
     sys.exit(1)
 
 from esearch.common import (CONFIG, SyncOpts, outofdateerror, logfile_sync,
-    tmp_path, tmp_prefix, version, EPREFIX, COMPACT)
+    laymanlog_sync, tmp_path, tmp_prefix, version, EPREFIX, COMPACT)
 from esearch.update import updatedb
 from esearch.search import searchdb
 
@@ -85,8 +85,11 @@ def parseopts(opts, config=None):
             config['syncprogram'] = SyncOpts["delta-webrsync"]
         elif arg in ("-m", "--metadata"):
             config['syncprogram'] = SyncOpts["metadata"]
+        elif arg in ('-l', '--layman-sync'):
+            config['layman-sync'] = True
         elif arg in ("-n", "--nocolor"):
             nocolor()
+            config["nocolor"] = True
             config['showtitles'] = False
         elif arg in ("-q", "--quiet"):
             config['eupdatedb_extra_options'] = "-q"
@@ -143,9 +146,53 @@ def gettree(tree, config):
     return db
 
 
+def layman_sync(config):
+    # check for an available layman api
+    try:
+        from layman import Layman
+    except ImportError:
+        # run it in a subprocess
+        if config['verbose'] >= 0:
+            emsg("Doing 'Layman -S' now", config)
+
+        if config['verbose'] == 1:
+            errorcode = os.system(config['layman-cmd'] + " | tee " + laymanlog_sync + " 2>&1")
+        else:
+            errorcode = os.system(config['layman-cmd'] + " > " + laymanlog_sync + " 2>&1")
+
+        if errorcode != 0:
+            print(red(" * Error:"),\
+                "'layman -S'",\
+                 "failed, see", logfile_sync, "for errors")
+            print("")
+            return False
+        return True
+    # run the api to sync
+    emsg("Running the Layman API", config)
+    if config['verbose']<1:
+        quietness=0
+    else:
+        quietness=4
+    _layman = Layman(stdout=config['stdout'], stderr=config['stderr'],
+        quiet=config['verbose']<1, quietness=quietness,
+        verbose=config['verbose']>0, nocolor=config['nocolor'])
+    repos = _layman.get_installed()
+    success = _layman.sync(repos, output_results=config['verbose']>0)
+    if not success:
+        print(red(" * Error:"),\
+            "Syncing with the layman api",\
+             "failed.")
+        print("")
+    return success
+
+
 def sync(config):
 
     tree_old = gettree("old", config)
+
+    if config['layman-sync']:
+        if not layman_sync(config):
+            return False
 
     if config['verbose'] >= 0:
         emsg("Doing '" + config['syncprogram'] + "' now", config)
@@ -234,8 +281,8 @@ def sync(config):
 
 def main():
     try:
-        opts = getopt(sys.argv[1:], "hwdmnqvs",
-            ["help", "webrsync", "delta-webrsync",
+        opts = getopt(sys.argv[1:], "hwdlmnqvs",
+            ["help", "webrsync", "delta-webrsync", "layman-sync",
             "nocolor", "verbose", "metadata", "nospinner",
             "quiet"])
     except GetoptError as error:

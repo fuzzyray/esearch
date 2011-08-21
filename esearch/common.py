@@ -37,6 +37,7 @@ SyncOpts = {
 }
 
 logfile_sync =  EPREFIX + "/var/log/emerge-sync.log"
+laymanlog_sync =  EPREFIX + "/var/log/layman-sync.log"
 tmp_path = "/tmp"
 tmp_prefix = tmp_path + "/esync"
 
@@ -59,10 +60,13 @@ CONFIG = {
     'notinst': False,
     'found_in_overlay': False,
     'syncprogram': SyncOpts['sync'],
+    'layman-sync': False,
+    'layman-cmd': 'layman -SN',
     'eupdatedb_extra_options': '',
     # too time comsuming to import & get it from portage here
     # just set a default
     'showtitles': True,
+    "nocolor": False
     }
 
 
