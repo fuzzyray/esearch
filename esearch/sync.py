@@ -27,8 +27,9 @@ except ImportError:
     print("Critical: portage imports failed!")
     sys.exit(1)
 
-from esearch.common import (CONFIG, SyncOpts, outofdateerror, logfile_sync,
-    laymanlog_sync, tmp_path, tmp_prefix, version, EPREFIX, COMPACT)
+from esearch.common import (CONFIG, SyncOpts, error, outofdateerror,
+    logfile_sync, laymanlog_sync, tmp_path, tmp_prefix, version,
+    EPREFIX, COMPACT)
 from esearch.update import updatedb
 from esearch.search import searchdb
 
@@ -122,9 +123,7 @@ def gettree(tree, config):
         os.symlink(os.path.join(config['esearchdbdir'], config['esearchdbfile']), target)
     except OSError as e:
         if e.errno != 17:
-            print(e)
-            print("")
-            sys.exit(1)
+            error(str(e), fatal=True)
     try:
         if tree == "old":
             from esyncoldtree import db
@@ -137,11 +136,9 @@ def gettree(tree, config):
         else:
             from esyncnewtree import db
     except ImportError:
-        print(red(" * Error:"), "Could not find " + tree +
-            "esearch-index. Please run",
-            green("eupdatedb"), "as root first")
-        print("")
-        sys.exit(1)
+        error("Could not find " + tree +
+            "esearch-index. Please run " +
+            green("eupdatedb") + " as root first", fatal=True)
     os.unlink(target)
     return db
 
@@ -153,17 +150,18 @@ def layman_sync(config):
     except ImportError:
         # run it in a subprocess
         if config['verbose'] >= 0:
-            emsg("Doing 'Layman -S' now", config)
+            emsg("Doing " + config['layman-cmd'] +" now", config)
 
         if config['verbose'] == 1:
-            errorcode = os.system(config['layman-cmd'] + " | tee " + laymanlog_sync + " 2>&1")
+            errorcode = os.system(config['layman-cmd'] + " | tee " +
+                laymanlog_sync + " 2>&1")
         else:
-            errorcode = os.system(config['layman-cmd'] + " > " + laymanlog_sync + " 2>&1")
+            errorcode = os.system(config['layman-cmd'] + " > " +
+                laymanlog_sync + " 2>&1")
 
         if errorcode != 0:
-            print(red(" * Error:"),\
-                "'layman -S'",\
-                 "failed, see", logfile_sync, "for errors")
+            error("'" + config['layman-cmd'] + "' failed, see " +
+                logfile_sync + " for errors", fatal=False)
             print("")
             return False
         return True
@@ -174,15 +172,13 @@ def layman_sync(config):
     else:
         quietness=4
     _layman = Layman(stdout=config['stdout'], stderr=config['stderr'],
-        quiet=config['verbose']<1, quietness=quietness,
+        quiet=config['verbose']<0, quietness=quietness,
         verbose=config['verbose']>0, nocolor=config['nocolor'])
     repos = _layman.get_installed()
     success = _layman.sync(repos, output_results=config['verbose']>0)
     if not success:
-        print(red(" * Error:"),\
-            "Syncing with the layman api",\
-             "failed.")
-        print("")
+        error("Syncing with the layman api",\
+             "failed.", fatal=False)
     return success
 
 
@@ -198,15 +194,15 @@ def sync(config):
         emsg("Doing '" + config['syncprogram'] + "' now", config)
 
     if config['verbose'] == 1:
-        errorcode = os.system(config['syncprogram'] + " | tee " + logfile_sync + " 2>&1")
+        errorcode = os.system(config['syncprogram'] + " | tee " +
+            logfile_sync + " 2>&1")
     else:
-        errorcode = os.system(config['syncprogram'] + " > " + logfile_sync + " 2>&1")
+        errorcode = os.system(config['syncprogram'] + " > " +
+            logfile_sync + " 2>&1")
 
     if errorcode != 0:
-        print(red(" * Error:"),\
-            "'" + config['syncprogram'] + "'",\
-             "failed, see", logfile_sync, "for errors")
-        print("")
+        error("'" + config['syncprogram'] + "' failed, see " +
+            logfile_sync + " for errors", fatal=False)
         return False
 
     if config['verbose'] >= 0:
@@ -218,7 +214,7 @@ def sync(config):
     success = updatedb(config)
     if not success:
         print("")
-        print(red(" * Error:"), "running updatedb failed")
+        error("running updatedb failed", fatal=False)
         return False
 
     if config['verbose'] >= 0:
@@ -286,10 +282,7 @@ def main():
             "nocolor", "verbose", "metadata", "nospinner",
             "quiet"])
     except GetoptError as error:
-        print(red(" * Error:"), error, "(see", darkgreen("--help"), "for all options)")
-        print()
-        sys.exit(1)
-
+        error(str(error) + " (see" + darkgreen("--help") + " for all options)")
     config = parseopts(opts)
     success = sync(config)
     # sys.exit() values are opposite T/F
