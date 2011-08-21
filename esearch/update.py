@@ -24,7 +24,7 @@ from getopt import getopt, GetoptError
 
 import portage
 try:
-    from portage.output import red, darkgreen, green, bold, nocolor
+    from portage.output import yellow, darkgreen, green, bold, nocolor
     from portage.manifest import Manifest
     from portage.exception import PortageException
 except ImportError:
@@ -117,13 +117,13 @@ def parseopts(opts, config=None):
 def updatedb(config=None):
 
     if not os.access(config['esearchdbdir'], os.W_OK):
-        print(red("Warning:"),
+        print(yellow("Warning:"),
             "You do not have sufficient permissions to save the index file in:",
             green(config['esearchdbdir']), file=config['stderr'])
         return False
 
     if config['verbose'] != -1 and "ACCEPT_KEYWORDS" in environ:
-        print(red("Warning:"),
+        print(yellow("Warning:"),
             "You have set ACCEPT_KEYWORDS in environment, this will result",
             file=config['stdout'])
         print("         in a modified index file", file=config['stdout'])
@@ -132,17 +132,14 @@ def updatedb(config=None):
     numebuilds = len(ebuilds)
 
     if exists(config['tmpfile']):
-        print(red("Error: "), " there is probably another eupdatedb running "
-            "already.", file=config['stderr'])
-        print("         If you're sure there is no other process, remove",
-            config['tmpfile'], file=config['stderr'])
-        print("", file=config['stderr'])
+        error("there is probably another eupdatedb running already.\n" +
+            "         If you're sure there is no other process, remove",
+            config['tmpfile'], fatal=False)
         return False
     try:
         dbfd = open(config['tmpfile'], O_CREAT | O_EXCL | O_WRONLY, 0o600)
     except OSError:
-        print(red("Error: "), " failed to open temporary file.",
-            file=config['stderr'])
+        error("Failed to open temporary file.", fatal=False)
         return False
     dbfile = fdopen(dbfd, "w")
     dbfile.write("dbversion = " + str(config['needdbversion']) + "\n")
