@@ -172,13 +172,17 @@ def layman_sync(config):
     else:
         quietness=4
     _layman = Layman(stdout=config['stdout'], stderr=config['stderr'],
-        quiet=config['verbose']<0, quietness=quietness,
+        quiet=config['verbose']<1, quietness=quietness,
         verbose=config['verbose']>0, nocolor=config['nocolor'])
     repos = _layman.get_installed()
     success = _layman.sync(repos, output_results=config['verbose']>0)
     if not success:
         error("Syncing with the layman api",\
-             "failed.", fatal=False)
+             "failed.\n   Failures were:", fatal=False)
+        fatals = _layman.sync_results[2]
+        for ovl, result in fatals:
+            error(result, fatal=False)
+
     return success
 
 
