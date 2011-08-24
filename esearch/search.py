@@ -159,7 +159,11 @@ def loaddb(config):
     """Loads the esearchdb"""
     try:
         sys.path.append(config['esearchdbdir'])
-        from esearchdb import db
+        try:
+            from esearchdb import db
+        except SyntaxError:
+            error("Could not read esearch-index. Please run " +
+                green("eupdatedb") + " as root first", stderr=config['stderr'])
         try:
             from esearchdb import dbversion
             if dbversion < config['needdbversion']:
