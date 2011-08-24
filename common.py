@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Some functions for esearch,
 # eupdatedb and esync.

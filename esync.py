@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/env python
 #
 # 'python -u' for unbuffered output, so you can call
 #   $ esync | tee esync.log
