@@ -1,0 +1,6 @@
+include AUTHORS
+include ChangeLog
+include setup.py
+recursive-include bin *
+recursive-include man *
+recursive-include esearch *.py *.txt
