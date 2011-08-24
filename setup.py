@@ -29,8 +29,6 @@ python_scripts = [os.path.join(cwd, path) for path in (
 	'esearch/__init__.py',
 )]
 
-print(repr(python_scripts))
-
 class set_version(core.Command):
 	"""Set python __version__ and bash VERSION to our __version__."""
 	description = "hardcode scripts' version using VERSION from environment"
@@ -82,7 +80,9 @@ core.setup(
 	packages=packages,
 	scripts=(glob('bin/*')),
 	data_files=(
-		(os.path.join(EPREFIX, 'usr/share/man/man1'), glob('man/*')),
+		(os.path.join(EPREFIX, 'usr/share/man/man1'), glob('man/en/*')),
+		(os.path.join(EPREFIX, 'usr/share/man/fr/man1'), glob('man/fr/*')),
+		(os.path.join(EPREFIX, 'usr/share/man/it/man1'), glob('man/it/*')),
 	),
 	cmdclass={
 		'set_version': set_version,
