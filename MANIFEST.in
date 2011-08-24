@@ -1,5 +1,6 @@
 include AUTHORS
 include ChangeLog
+include eupdatedb.cron
 include setup.py
 recursive-include bin *
 recursive-include man *
