@@ -9,9 +9,15 @@
 
 from getopt import *
 import sys
+import os
 
-sys.path.insert(0, "/usr/lib/portage/pym")
-sys.path.insert(0, "/usr/lib/esearch")
+try:
+	from portage.const import EPREFIX
+except ImportError:
+	EPREFIX = ''
+
+sys.path.insert(0, EPREFIX + "/usr/lib/portage/pym")
+sys.path.insert(0, EPREFIX + "/usr/lib/esearch")
 
 try:
     from portage.output import bold, red, green, darkgreen, turquoise, nocolor
@@ -22,7 +28,7 @@ import re
 
 from common import needdbversion
 
-esearchdbdir =  "/var/cache/edb/"
+esearchdbdir =  EPREFIX + "/var/cache/edb/"
 
 def usage():
     print "esearch (0.7.1) - Replacement for 'emerge search' with search-index"

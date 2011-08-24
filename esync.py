@@ -15,7 +15,12 @@ import os
 import sys
 from getopt import *
 
-sys.path.insert(0, "/usr/lib/portage/pym")
+try:
+	from portage.const import EPREFIX
+except ImportError:
+	EPREFIX = ''
+
+sys.path.insert(0, EPREFIX + "/usr/lib/portage/pym")
 
 import portage
 try:
@@ -25,11 +30,11 @@ except ImportError:
 
 from common import needdbversion
 
-syncprogram =   "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge --sync"
-logfile_sync =  "/var/log/emerge-sync.log"
-tmp_prefix =    "/tmp/esync"
+syncprogram =   "EMERGE_DEFAULT_OPTS=\"\" " + EPREFIX + "/usr/bin/emerge --sync"
+logfile_sync =  EPREFIX + "/var/log/emerge-sync.log"
+tmp_prefix =    EPREFIX + "/tmp/esync"
 
-sys.path.append("/tmp")
+sys.path.append(EPREFIX + "/tmp")
 
 eoptions = ""
 eupdatedb_extra_options = ""
@@ -85,11 +90,11 @@ for a in opts[0]:
     if arg in ("-h", "--help"):
         usage()
     elif arg in ("-w", "--webrsync"):
-        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" /usr/sbin/emerge-webrsync"
+        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" " + EPREFIX + "/usr/sbin/emerge-webrsync"
     elif arg in ("-d", "--delta-webrsync"):
-        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge-delta-webrsync -u"
+        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" " + EPREFIX + "/usr/bin/emerge-delta-webrsync -u"
     elif arg in ("-m", "--metadata"):
-        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" /usr/bin/emerge --metadata"
+        syncprogram = "EMERGE_DEFAULT_OPTS=\"\" " + EPREFIX + "/usr/bin/emerge --metadata"
     elif arg in ("-n", "--nocolor"):
         eoptions = "-n"
         nocolor()
@@ -123,7 +128,7 @@ def gettree(tree):
         target = tmp_prefix + tree + "tree.pyc"
         if os.path.exists(target):
             os.unlink(target)
-        os.symlink("/var/cache/edb/esearchdb.pyc", target)
+        os.symlink(EPREFIX + "/var/cache/edb/esearchdb.pyc", target)
     except OSError, e:
         if e.errno != 17:
             print e
@@ -166,7 +171,7 @@ if not quiet:
     emsg("Doing 'eupdatedb' now")
     print ""
 
-if os.system("/usr/sbin/eupdatedb " + eoptions + " " + eupdatedb_extra_options) != 0:
+if os.system(EPREFIX + "/usr/sbin/eupdatedb " + eoptions + " " + eupdatedb_extra_options) != 0:
     print ""
     print red(" * Error:"), "eupdatedb failed"
     sys.exit(1)
@@ -198,7 +203,7 @@ haspkg = False
 
 for (pkg, version) in items:
     if (pkg not in old_keys) or (old[pkg] != new[pkg]):
-        os.system("/usr/bin/esearch " + eoptions + " -Fc ^" + pkg + "$ | head -n1")
+        os.system(EPREFIX + "/usr/bin/esearch " + eoptions + " -Fc ^" + pkg + "$ | head -n1")
         haspkg = True
 
 if not haspkg:

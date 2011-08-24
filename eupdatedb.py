@@ -17,8 +17,13 @@ from os.path import exists
 from shutil import copyfile
 from getopt import *
 
-sys.path.insert(0, "/usr/lib/portage/pym")
-sys.path.insert(0, "/usr/lib/esearch")
+try:
+	from portage.const import EPREFIX
+except ImportError:
+	EPREFIX = ''
+
+sys.path.insert(0, EPREFIX + "/usr/lib/portage/pym")
+sys.path.insert(0, EPREFIX + "/usr/lib/esearch")
 
 import portage
 try:
@@ -32,8 +37,8 @@ except ImportError:
 
 from common import needdbversion, version
 
-esearchdbdir =  "/var/cache/edb/"
-tmpfile =       "/tmp/esearchdb.py.tmp"
+esearchdbdir =  EPREFIX + "/var/cache/edb/"
+tmpfile =       EPREFIX + "/tmp/esearchdb.py.tmp"
 
 vartree = portage.vartree()
 
