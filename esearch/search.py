@@ -159,20 +159,16 @@ def loaddb(config):
     """Loads the esearchdb"""
     try:
         sys.path.append(config['esearchdbdir'])
-        try:
-            from esearchdb import db
-        except SyntaxError:
-            error("Could not read esearch-index. Please run " +
-                green("eupdatedb") + " as root first", stderr=config['stderr'])
-        try:
-            from esearchdb import dbversion
-            if dbversion < config['needdbversion']:
-                outofdateerror(config['stderr'])
-        except ImportError:
-            outofdateerror(config['stderr'])
-    except ImportError:
+        from esearchdb import db
+    except (ImportError, SyntaxError):
         error("Could not find esearch-index. Please run " +
             green("eupdatedb") + " as root first", stderr=config['stderr'])
+    try:
+        from esearchdb import dbversion
+        if dbversion < config['needdbversion']:
+            outofdateerror(config['stderr'])
+    except ImportError:
+        outofdateerror(config['stderr'])
     return db
 
 def do_compact(pkg):
