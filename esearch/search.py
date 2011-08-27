@@ -151,6 +151,9 @@ def parseopts(opts, config=None):
                     "' does not exist.", stderr=config['stderr'])
         elif arg in ("-n", "--nocolor"):
             nocolor()
+    if config['fullname'] and config['searchdesc']:
+        error("Please use either " + darkgreen("--fullname") +
+            " or " + darkgreen("--searchdesc"), stderr=config['stderr'])
     return config
 
 
@@ -273,6 +276,8 @@ def do_own(pkg, own):
 
 
 def create_regexp(config, patterns):
+    """Creates a list of regular expressions and other data
+    for use in db searches for each pattern in the list of patterns"""
     regexlist = []
     # Hacks for people who aren't regular expression gurus
     for pattern in patterns:
@@ -290,26 +295,28 @@ def create_regexp(config, patterns):
 
 
 def searchdb(config, patterns, db=None):
+    """Gutted out old search method.
+    Now just calls the broken up functions.
+    For api compatibility.
+    """
+    regexlist = create_regexp(config, opts[1])
+    found = search_list(config, regexlist, db)
+    return output_results(config, regexlist, found)
 
+
+# turns out this is slower :(
+def search1(config, regexlist, db=None):
+    """Test search method that performs
+    multiple reg expr. checks for each pkg
+    """
     data = {}
-    data['ebuilds'] = []
-    data['defebuild'] = (0, 0)
 
-    if config['fullname'] and config['searchdesc']:
-        error("Please use either " + darkgreen("--fullname") +
-            " or " + darkgreen("--searchdesc"), stderr=config['stderr'])
+    #for regex, pattern, foo, foo, fullname in regexlist:
+    for p in range(len(regexlist)):
+        data[regexlist[p][1]] = []
 
-    regexlist = create_regexp(config, patterns)
-
-    # Could also loop through all packages only once, and remember which
-    # regex from regexlist has matched this package, and then build the output
-    # => probably faster
-
-    i = 0
-    for regex, pattern, foo, foo, fullname in regexlist:
-        count = 0
-        data['output'] = []
-        for pkg in db:
+    for pkg in db:
+        for regex, pattern, foo, foo, fullname in regexlist:
             found = False
 
             if config['instonly'] and not pkg[4]:
@@ -319,41 +326,86 @@ def searchdb(config, patterns, db=None):
 
             if  fullname and regex.search(pkg[1]):
                 found = True
-            elif not fullname and regex.search(pkg[0]):
+            elif regex.search(pkg[0]):
                 found = True
             elif config['searchdesc'] and regex.search(pkg[7]):
                 found = True
 
             if found:
-                if config['outputm'] in (NORMAL, VERBOSE):
-                    newdata, _continue = do_normal(pkg,
-                        config['outputm'] == VERBOSE)
-                    data['output'] += newdata
-                    if _continue:
-                        continue
-                elif config['outputm'] in (COMPACT, EBUILDS):
-                    data['output'].append(do_compact(pkg))
+                data[pattern].append(pkg)
+    return data
 
-                elif config['outputm'] == OWN:
-                    data['output'].append(do_own(pkg, config['outputf']))
 
-                if config['outputm'] == EBUILDS:
-                    if count == 0:
-                        searchdef = pkg[0] + "-" + pkg[3]
-                    else:
-                        searchdef = ""
+def search_list(config, regexlist, db=None):
+    """An optimized regular expression list db search"""
+    data = {}
 
-                    searchEbuilds("%s/%s/" % (config['portdir'], pkg[1]),
-                        True, searchdef, "", config, data)
-                    if config['overlay']:
-                        repo_num=1
-                        for repo in config['overlay'].split():
-                            searchEbuilds("%s/%s/" % ( repo, pkg[1]),
-                                False, searchdef,repo_num, config, data)
-                            repo_num += 1
+    for regex, pattern, foo, foo, fullname in regexlist:
+        data[pattern] = search(config, regex, fullname, db)
+    return data
 
-                    #data['output'].append("\n")
-                count += 1
+
+def search(config, regex, fullname, db):
+    """An optimized single regular expression db search"""
+    data = []
+
+    for pkg in db:
+        found = False
+
+        if config['instonly'] and not pkg[4]:
+            continue
+        elif config['notinst'] and pkg[4]:
+            continue
+
+        if fullname:
+            found = regex.search(pkg[1])
+        elif config['searchdesc']:
+            found = regex.search(pkg[7])
+        else:
+            found = regex.search(pkg[0])
+
+        if found:
+            data.append(pkg)
+    return data
+
+
+def output_results(config, regexlist, found):
+    data = {}
+    data['ebuilds'] = []
+    data['defebuild'] = (0, 0)
+    i = 0
+    for regex, pattern, foo, foo, fullname in regexlist:
+        count = 0
+        data['output'] = []
+        for pkg in found[pattern]:
+            if config['outputm'] in (NORMAL, VERBOSE):
+                newdata, _continue = do_normal(pkg,
+                    config['outputm'] == VERBOSE)
+                data['output'] += newdata
+                if _continue:
+                    continue
+            elif config['outputm'] in (COMPACT, EBUILDS):
+                data['output'].append(do_compact(pkg))
+
+            elif config['outputm'] == OWN:
+                data['output'].append(do_own(pkg, config['outputf']))
+
+            if config['outputm'] == EBUILDS:
+                if count == 0:
+                    searchdef = pkg[0] + "-" + pkg[3]
+                else:
+                    searchdef = ""
+
+                searchEbuilds("%s/%s/" % (config['portdir'], pkg[1]),
+                    True, searchdef, "", config, data)
+                if config['overlay']:
+                    repo_num=1
+                    for repo in config['overlay'].split():
+                        searchEbuilds("%s/%s/" % ( repo, pkg[1]),
+                            False, searchdef,repo_num, config, data)
+                        repo_num += 1
+
+            count += 1
 
         regexlist[i][2] = "\n".join(data['output'])
         regexlist[i][3] = count
@@ -423,9 +475,13 @@ def main():
             ])
     except GetoptError as errmsg:
         error(str(errmsg) + " (see " + darkgreen("--help") + " for all options)")
+
     config = parseopts(opts)
     db = loaddb(config)
-    success = searchdb(config, opts[1], db)
+    regexlist = create_regexp(config, opts[1])
+    found = search_list(config, regexlist, db)
+    success = output_results(config, regexlist, found)
+
     # sys.exit() values are opposite T/F
     sys.exit(not success)
 
