@@ -272,19 +272,8 @@ def do_own(pkg, own):
     return own
 
 
-def searchdb(config, patterns, db=None):
-
-    data = {}
-    data['ebuilds'] = []
-    data['defebuild'] = (0, 0)
-
-    if config['fullname'] and config['searchdesc']:
-        error("Please use either " + darkgreen("--fullname") +
-            " or " + darkgreen("--searchdesc"), stderr=config['stderr'])
-
-
+def create_regexp(config, patterns):
     regexlist = []
-
     # Hacks for people who aren't regular expression gurus
     for pattern in patterns:
         if pattern == "*":
@@ -297,7 +286,20 @@ def searchdb(config, patterns, db=None):
                 and not config['searchdesc']])
         except re.error:
             error("Invalid regular expression.", stderr=config['stderr'])
-            sys.exit(1)
+    return regexlist
+
+
+def searchdb(config, patterns, db=None):
+
+    data = {}
+    data['ebuilds'] = []
+    data['defebuild'] = (0, 0)
+
+    if config['fullname'] and config['searchdesc']:
+        error("Please use either " + darkgreen("--fullname") +
+            " or " + darkgreen("--searchdesc"), stderr=config['stderr'])
+
+    regexlist = create_regexp(config, patterns)
 
     # Could also loop through all packages only once, and remember which
     # regex from regexlist has matched this package, and then build the output
