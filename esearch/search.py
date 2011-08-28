@@ -157,7 +157,6 @@ def parseopts(opts, config=None):
     return config
 
 
-
 def loaddb(config):
     """Loads the esearchdb"""
     try:
@@ -173,6 +172,7 @@ def loaddb(config):
     except ImportError:
         outofdateerror(config['stderr'])
     return db
+
 
 def do_compact(pkg):
     prefix0 = " "
@@ -193,6 +193,7 @@ def do_compact(pkg):
 
     return " [%s%s] %s (%s):  %s" % \
             (red(prefix0), color(prefix1), bold(pkg[1]), color(pkg[3]), pkg[7])
+
 
 def do_normal(pkg, verbose):
     data = []
@@ -237,6 +238,7 @@ def do_normal(pkg, verbose):
              darkgreen("Description:"), pkg[7],
              darkgreen("License:"), pkg[8]))
     return data, False
+
 
 def do_own(pkg, own):
     # %c => category
