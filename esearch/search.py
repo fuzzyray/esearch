@@ -301,7 +301,7 @@ def searchdb(config, patterns, db=None):
     Now just calls the broken up functions.
     For api compatibility.
     """
-    regexlist = create_regexp(config, opts[1])
+    regexlist = create_regexp(config, patterns)
     found = search_list(config, regexlist, db)
     return output_results(config, regexlist, found)
 
