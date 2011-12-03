@@ -125,6 +125,8 @@ def parseopts(opts, config=None):
 
     for a in opts[0]:
         arg = a[0]
+        if arg in ("-h", "--help"):
+            usage()
         if arg in ("-S", "--searchdesc"):
             config['searchdesc'] = True
         elif arg in ("-F", "--fullname"):
