@@ -54,6 +54,9 @@ def usage():
     print(darkgreen("  --metadata") + ", " + darkgreen("-m"))
     print("    Use 'emerge --metadata' instead of 'emerge --sync'")
     print("")
+    print(darkgreen("  --layman-sync") + ", " + darkgreen("-l"))
+    print("    Use layman to sync any installed overlays, then sync the main tree")
+    print("")
     print(darkgreen("  --nocolor") + ", " + darkgreen("-n"))
     print("    Don't use ANSI codes for colored output")
     print("")
@@ -177,7 +180,7 @@ def layman_sync(config):
     repos = _layman.get_installed()
     success = _layman.sync(repos, output_results=config['verbose']>0)
     if not success:
-        error("Syncing with the layman api",\
+        error("Syncing with the layman api "\
              "failed.\n   Failures were:", fatal=False)
         fatals = _layman.sync_results[2]
         for ovl, result in fatals:
