@@ -1,7 +1,7 @@
 .TH esearch 1 "08 Luglio 2004" "esearch"
 
 .SH "NOME"
-esync \- Esegue 'emerge --sync' e 'eupdatedb' mostrando gli aggiornamenti
+esync \- Esegue 'emerge \-\-sync' e 'eupdatedb' mostrando gli aggiornamenti
 
 .SH "SINTASSI"
 .B esync
@@ -9,7 +9,7 @@ esync \- Esegue 'emerge --sync' e 'eupdatedb' mostrando gli aggiornamenti
 
 .SH "DESCRIZIONE"
 esync prima importa il vecchio indice di esearch, quindi esegue
-'emerge --sync' (o un comando alternativo: vedi opzioni) e 'eupdatedb'.
+'emerge \-\-sync' (o un comando alternativo: vedi opzioni) e 'eupdatedb'.
 Quindi mostra i nuovi pacchetti e quelli aggiornati.
 
 .SH "OPZIONI"
@@ -18,19 +18,28 @@ Quindi mostra i nuovi pacchetti e quelli aggiornati.
 Stampa un messaggio di aiuto.
 .TP
 .B \-\-webrsync, \-w
-Usa 'emerge-webrsync' invece di 'emerge --sync'.
+Usa 'emerge-webrsync' invece di 'emerge \-\-sync'.
 .TP
 .B \-\-delta-webrsync, \-d
-Usa 'emerge-delta-webrsync' invece di 'emerge --sync'.
+Usa 'emerge-delta-webrsync' invece di 'emerge \-\-sync'.
 .TP
 .B \-\-metadata, \-m
-Usa 'emerge --metadata' invece di 'emerge --sync'.
+Usa 'emerge --metadata' invece di 'emerge \-\-sync'.
+.TP
+.B \-\-layman\-sync, \-l
+Usa layman per sincronizzare qualsiasi overlay installato, quindi sincronizza l'albero principale.
 .TP
 .B \-\-nocolor, \-n
 Non usa i codici colore ANSI per la stampa.
 .TP
+.B \-\-quiet, \\-q
+Stampa meno dettagliata. (implica \-\-nospinner)
+.TP
 .B \-\-verbose, \-v
 Stampa dettagliata.
+.TP
+.B \-\-nospinner, \-s
+Non stampa il conto dell'indice rimanente.
 
 .SH "VEDI ANCHE"
 esearch(1), eupdatedb(1), emerge(1)

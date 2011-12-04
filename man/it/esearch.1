@@ -8,7 +8,7 @@ esearch \- alternativa a 'emerge search' con indice di ricerca
 [ opzioni ] <pattern>
 
 .SH "DESCRIZIONE"
-esearch e` un piccolo script che si comporta esattamente come emerge \-s e 
+esearch e` un piccolo script che si comporta esattamente come emerge \-s e
 rispettivamente emerge \-S. Il vantaggio di esearch rispetto ad emerge e`
 l'uso di un indice di ricerca. E` molto piu` veloce di emerge \-s/\-S.
 
@@ -23,8 +23,17 @@ Cerca anche nella descrizione del pacchetto.
 .B \-\-fullname, \-F
 Cerca il nome completo del pacchetto(includendo la categoria).
 .TP
+.B \-\-instonly, \-I
+Trova solo i pacchetti che sono installati.
+.TP
+.B \-\-notinst, \-N
+Trova solo i pacchetti che NON sono installati.
+.TP
 .B \-\-compact, \-c
 Stampa in modo piu` compatto.
+.TP
+.B \-\-verbose, \-v
+Fornisce molte informazioni addizionali. (rallenta!)
 .TP
 .B \-\-ebuild, \-e
 Mostra le ebuilds dei pacchetti trovati.
