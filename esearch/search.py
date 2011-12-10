@@ -15,7 +15,7 @@ from os import listdir, getenv, system
 from os.path import isdir, exists
 import re
 
-sys.path.insert(0, "/usr/lib/portage/pym")
+#sys.path.insert(0, "/usr/lib/portage/pym")
 # commented out so it can run from the git checkout
 #sys.path.insert(0, "/usr/lib/esearch")
 
