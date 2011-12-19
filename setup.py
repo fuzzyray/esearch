@@ -22,7 +22,7 @@ cwd = os.getcwd()
 try: 
 	from portage.const import EPREFIX 
 except ImportError: 
-	EPREFIX='/' 
+	EPREFIX='' 
 
 # Python files that need `__version__ = ""` subbed, relative to this dir:
 python_scripts = [os.path.join(cwd, path) for path in (
@@ -80,9 +80,9 @@ core.setup(
 	packages=packages,
 	scripts=(glob('bin/*')),
 	data_files=(
-		(os.path.join(EPREFIX, 'usr/share/man/man1'), glob('man/en/*')),
-		(os.path.join(EPREFIX, 'usr/share/man/fr/man1'), glob('man/fr/*')),
-		(os.path.join(EPREFIX, 'usr/share/man/it/man1'), glob('man/it/*')),
+		(os.path.join(os.sep, EPREFIX.lstrip(os.sep), 'usr/share/man/man1'), glob('man/en/*')),
+		(os.path.join(os.sep, EPREFIX.lstrip(os.sep), 'usr/share/man/fr/man1'), glob('man/fr/*')),
+		(os.path.join(os.sep, EPREFIX.lstrip(os.sep), 'usr/share/man/it/man1'), glob('man/it/*')),
 	),
 	cmdclass={
 		'set_version': set_version,
