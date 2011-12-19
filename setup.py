@@ -18,12 +18,6 @@ __version__ = os.getenv('VERSION', default='9999')
 
 cwd = os.getcwd()
 
-# Load EPREFIX from Portage, fall back to the empty string if it fails 
-try: 
-	from portage.const import EPREFIX 
-except ImportError: 
-	EPREFIX='' 
-
 # Python files that need `__version__ = ""` subbed, relative to this dir:
 python_scripts = [os.path.join(cwd, path) for path in (
 	'esearch/__init__.py',
@@ -80,9 +74,9 @@ core.setup(
 	packages=packages,
 	scripts=(glob('bin/*')),
 	data_files=(
-		(os.path.join(os.sep, EPREFIX.lstrip(os.sep), 'usr/share/man/man1'), glob('man/en/*')),
-		(os.path.join(os.sep, EPREFIX.lstrip(os.sep), 'usr/share/man/fr/man1'), glob('man/fr/*')),
-		(os.path.join(os.sep, EPREFIX.lstrip(os.sep), 'usr/share/man/it/man1'), glob('man/it/*')),
+		(os.path.join('share/man/man1'), glob('man/en/*')),
+		(os.path.join('share/man/fr/man1'), glob('man/fr/*')),
+		(os.path.join('share/man/it/man1'), glob('man/it/*')),
 	),
 	cmdclass={
 		'set_version': set_version,
