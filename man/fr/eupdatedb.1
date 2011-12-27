@@ -1,31 +1,33 @@
-.TH esearch 1 "FÃ©vrier 13, 2005" "eupdatedb"
+.TH esearch 1 "13 Février 2005" "eupdatedb"
 
-.SH "NOM"
-eupdatedb \- Met Ã  jour la base de donnÃ©es d'indexation d'esearch
+.SH "NAME"
+esearch \- Met à jour l'index de recherche d'esearch
 
 .SH "SYNOPSIS"
 .B eupdatedb
-[Options]
+[ options ]
 
 .SH "DESCRIPTION"
-eupdatedb met Ã  jour le fichier d'indexation utilisÃ© par esearch.
+eupdatedb génère le fichier d'index d'esearch. Vous devez
+appeler eupdatedb pour faire en sorte que vos résultats de
+recherches restent pertinents.
 
 .SH "OPTIONS"
 .TP
 .B \-\-help, \-h
-Aide
+Affiche le message d'aide
 .TP
 .B \-\-verbose, \-v
-Mode verbeux, affiche les catÃ©gories
+Mode verbeux, montre les catégories
 .TP
 .B \-\-quiet, \-q
-Mode succinct, n'affiche que le sommaire
+Affiche seulement un résumé
 .TP
-.B \-\-directory = dir, \-d dir
-esearch lit le fichier d'indexation Ã  partir de ce rÃ©pertoire
+.B \-\-directory=dir, \-d dir
+Charge l'index d'esearch depuis dir
 .TP
 .B \-\-nocolor, \-n
-N'utilise pas de codes ANSI pour la sortie
+Ne pas utiliser de codes ANSI pour l'affichage coloré
 
 .SH "VOIR AUSSI"
 esearch(1), esync(1), emerge(1)
@@ -34,4 +36,4 @@ esearch(1), esync(1), emerge(1)
 Pas de bugs connus
 
 .SH "AUTEUR"
-<davidpeter@web.de> Peter David
+David Peter <davidpeter@web.de>

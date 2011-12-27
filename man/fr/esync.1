@@ -1,32 +1,46 @@
-.TH esearch 1 "FÃ©vrier 13, 2005" "esync"
-.SH "NOM"
-esync \ - Appelle 'emerge sync' et 'eupdatedb' et affiche les mises Ã  jour
+.TH esearch 1 "13 Février 2005" "esync" ""
+
+.SH "NAME"
+esync \- Appelle 'emerge \-\-sync' et 'eupdatedb' et affiche les mises à jour
 
 .SH "SYNOPSIS"
 .B esync
-[Options]
+[ options ]
 
 .SH "DESCRIPTION"
-esync importe l'ancienne base de donnÃ©es d'indexation et appelle 'emerge sync'
-ou 'emerge-webrsync' puis 'eupdatedb'. Ensuite il affiche les nouveaux
-paquetages ainsi que les mises Ã  jour.
+esync importe d'abord l'ancien index de recherche, puis appelle 'emerge \-\-sync'
+(ou une autre commande : voir les options) et 'eupdatedb'. Enfin il affiche
+les nouveaux paquets ainsi que les paquets mis à jour.
 
 .SH "OPTIONS"
 .TP
 .B \-\-help, \-h
-aide
+Affiche le message d'aide
 .TP
 .B \-\-webrsync, \-w
-Utilise 'emerge-webrsync' au lieu de 'emerge sync'
+Utilise 'emerge\-webrsync' au lieu de 'emerge \-\-sync'
+.TP
+.B \-\-delta-webrsync, \-d
+Utilise 'emerge-delta-webrsync' au lieu de 'emerge --sync'
+.TP
+.B \-\-metadata, \-m
+Utilise 'emerge \-\-metadata' au lieu de 'emerge \-\-sync'
+.TP
+.B \-\-layman\-sync, \-l
+Utilise layman pour synchroniser tous les overlays installés, puis
+synchronise l'arbre principal.
 .TP
 .B \-\-nocolor, \-n
-N'utilise pas de codes ANSI pour la sortie
+Ne pas utiliser de codes ANSI pour l'affichage coloré
+.TP
+.B  \-\-quiet, \-q
+Rend la sortie moins verbeuse (implique \-\-nospinner)
 .TP
 .B \-\-verbose, \-v
-Mode verbeux
+Rend la sortie plus verbeuse
 .TP
 .B \-\-nospinner, \-s
-N'affiche pas le compteur
+N'affiche pas le compteur d'index restant
 
 .SH "VOIR AUSSI"
 esearch(1), eupdatedb(1), emerge(1)
@@ -35,4 +49,4 @@ esearch(1), eupdatedb(1), emerge(1)
 Pas de bugs connus
 
 .SH "AUTEUR"
-<davidpeter@web.de> Peter David
+David Peter <davidpeter@web.de>

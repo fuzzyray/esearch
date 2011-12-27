@@ -1,39 +1,104 @@
-.TH esearch 1 "FÃ©vrier 13, 2005" "esearch"
+.TH esearch 1 "13 Février 2005" "esearch"
 
-.SH NOM
-esearch \- Remplace 'emerge search' et utilise search-index
+.SH "NAME"
+esearch \- substitut de 'emerge search' avec un index de recherche
 
-.SH SYNOPSIS
-.B
-[Options] <motif>
+.SH "SYNOPSIS"
+.B esearch
+[ options ] <motif>
 
-.SH DESCRIPTION
-esearch se comporte comme emerge \-s. et emerge \-S. Il utilise search-index et de ce fait plus rapide.
+.SH "DESCRIPTION"
+esearch est un petit script qui se comporte exactement comme emerge \-s
+ou emerge \-S. L'avantage de esearch par rapport à emerge est qu'il
+utilise un index de recherche, ce qui le rend beaucoup plus rapide que
+emerge \-s/\-S.
 
-.SH OPTIONS
+.SH "OPTIONS"
 .TP
 .B \-\-help, \-h
-aide
+Affiche le message d'aide
 .TP
 .B \-\-searchdesc, \-S
-Affiche la description des paquetages
+Cherche aussi dans les descriptions de paquets
 .TP
 .B \-\-fullname, \-F
-Recherche des paquetages correspondants au nom complet (ainsi que sa catÃ©gorie)
+Cherche dans les noms complets des paquets (inclut la catégorie)
 .TP
 .B \-\-instonly, \-I
-Rechercher les paquetages installÃ©s
+Cherche seulement parmi les paquets déjà installés
+.TP
+.B \-\-notinst, \-N
+Cherche seulement parmi les paquets non installés
 .TP
 .B \-\-compact, \-c
-Mode succinct
+Affichage de sortie plus compact
 .TP
 .B \-\-verbose, \-v
-Mode verbeux (lent!)
+Donne beaucoup d'informations supplémentaires (lent!)
 .TP
 .B \-\-ebuild, \-e
-Affiche les ebuilds des paquetages trouvÃ©s
+Affiche les ebuilds des paquets trouvés
 .TP
 .B \-\-own=format, \-o format
-Affiche le format dÃ©fini par l'utilisateur,
-.B Format
-dÃ©finit une chaÃ®ne de caractÃ¨res standards ou spÃ©ciaux, voir la section FORMAT pour plus de dÃ©tails
+Utilise un format de sortie défini par l'utilisateur,
+.B format
+est une chaîne de caractères qui peut contenir des caractères spéciaux,
+voir la section FORMAT pour plus de détails
+.TP
+.B \-\-directory=dir, \-d dir
+Utilise dir pour stocker l'index d'esearch
+.TP
+.B \-\-nocolor, \-n
+Ne pas utiliser de codes ANSI pour l'affichage coloré
+
+.SH "FORMAT"
+.TP
+.B %c
+catégorie
+.TP
+.B %n
+nom du paquet
+.TP
+.B %p
+identique à "%c/%n"
+.TP
+.B %m
+"masked" si le paquet est masqué, sinon ""
+.TP
+.B %va
+dernière version disponible
+.TP
+.B %vi
+dernière version installée, ou ""
+.TP
+.B %s
+taille des fichiers téléchargés
+.TP
+.B %h
+Site officiel
+.TP
+.B %d
+Description
+.TP
+.B %l
+Licence
+
+.SH "EXEMPLES"
+.TP
+\f(CWesearch -o "/usr/portage/%p/ChangeLog\\n" ^package$\fP
+Affiche le chemin réel du fichier ChangeLog pour 'package'
+.TP
+\f(CWesearch -o "%n-%va.ebuild\\n" pattern\fP
+Affiche les noms des fichiers ebuild actuels.
+.TP
+\f(CWesearch -o "%p\\n" ^ > package-list\fP
+Génère une liste de tous les paquets disponibles.
+
+.SH "VOIR AUSSI"
+eupdatedb(1), esync(1), emerge(1)
+
+.SH "BUGS"
+Pas de bugs connus
+
+.SH "AUTEUR"
+David Peter <davidpeter@web.de>
