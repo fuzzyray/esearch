@@ -62,7 +62,7 @@ def usage():
 def duration(start):
     d = int(round(time() - start))
     if d >= 60:
-        d = str(d / 60) + " minute(s) and " + str(d % 60) + " second(s)"
+        d = str(d // 60) + " minute(s) and " + str(d % 60) + " second(s)"
     else:
         d = str(d) + " second(s)"
     return d
