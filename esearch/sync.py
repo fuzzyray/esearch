@@ -247,7 +247,7 @@ def sync(config):
 
     # alphabetic sort
     items = list(new.items())
-    items.sort(lambda x, y: cmp(x[0], y[0]))
+    items.sort(key=lambda x: x[0])
 
     old_keys = list(old.keys())
 
