@@ -80,7 +80,7 @@ def getfetchsize(pkg):
             fetchlist = portage.portdb.getfetchlist(pkg,
                 mysettings=portage.settings, all=True)[1]
         mysum = mf.getDistfilesSize(fetchlist)
-        mystr = str(mysum/1024)
+        mystr = str(mysum // 1024)
         mycount = len(mystr)
         while (mycount > 3):
             mycount -= 3
