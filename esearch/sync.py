@@ -164,7 +164,7 @@ def layman_sync(config):
 
         if errorcode != 0:
             error("'" + config['layman-cmd'] + "' failed, see " +
-                logfile_sync + " for errors", fatal=False)
+                laymanlog_sync + " for errors", fatal=False)
             print("")
             return False
         return True
