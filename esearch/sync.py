@@ -29,7 +29,7 @@ except ImportError:
 
 from esearch.common import (CONFIG, SyncOpts, error, outofdateerror,
     logfile_sync, laymanlog_sync, tmp_path, tmp_prefix, version,
-    EPREFIX, COMPACT)
+    EPREFIX, COMPACT, warn)
 from esearch.update import updatedb
 from esearch.search import searchdb
 
@@ -166,8 +166,8 @@ def layman_sync(config):
             error("'" + config['layman-cmd'] + "' failed, see " +
                 laymanlog_sync + " for errors", fatal=False)
             print("")
-            return False
-        return True
+            return False, []
+        return True, []
     # run the api to sync
     emsg("Running the Layman API", config)
     if config['verbose']<1:
@@ -179,6 +179,7 @@ def layman_sync(config):
         verbose=config['verbose']>0, nocolor=config['nocolor'])
     repos = _layman.get_installed()
     success = _layman.sync(repos, output_results=config['verbose']>0)
+    warnings = _layman.sync_results[1]
     if not success:
         error("Syncing with the layman api "\
              "failed.\n   Failures were:", fatal=False)
@@ -186,7 +187,7 @@ def layman_sync(config):
         for ovl, result in fatals:
             error(result, fatal=False)
 
-    return success
+    return success, warnings
 
 
 def sync(config):
@@ -194,7 +195,8 @@ def sync(config):
     tree_old = gettree("old", config)
 
     if config['layman-sync']:
-        if not layman_sync(config):
+        success, warnings = layman_sync(config)
+        if not success:
             return False
 
     if config['verbose'] >= 0:
@@ -265,6 +267,11 @@ def sync(config):
     if not haspkgs:
         emsg("No updates found", config)
         success = True
+
+    if warnings:
+        print("", file=config['stdout'])
+        for ovl, result in warnings:
+            warn(result)
 
     # multiple pkgname search method
     # build our re search list

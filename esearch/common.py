@@ -10,7 +10,7 @@ from __future__ import print_function
 
 import sys
 from portage import catpkgsplit
-from portage.output import red, green
+from portage.output import red, green, yellow
 
 from . import __version__
 
@@ -99,5 +99,11 @@ def outofdateerror(stderr=CONFIG['stderr']):
 def error(msg, fatal=True, stderr=CONFIG['stderr']):
     print(red(" * Error:"), msg, file=stderr)
     print('', file=stderr)
+    if fatal:
+        sys.exit(1)
+
+def warn(msg, fatal=False, stdout=CONFIG['stdout']):
+    print(yellow(" * Warning:"), msg, file=stdout)
+    print('', file=stdout)
     if fatal:
         sys.exit(1)
