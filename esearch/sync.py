@@ -192,6 +192,8 @@ def layman_sync(config):
 
 def sync(config):
 
+    warnings = None
+
     tree_old = gettree("old", config)
 
     if config['layman-sync']:
