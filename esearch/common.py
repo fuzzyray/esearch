@@ -59,6 +59,7 @@ CONFIG = {
     'pattern': False,
     'instonly': False,
     'notinst': False,
+    'exclude': [],
     'found_in_overlay': False,
     'syncprogram': SyncOpts['sync'],
     'layman-sync': False,

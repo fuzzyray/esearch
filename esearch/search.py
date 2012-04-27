@@ -143,6 +143,8 @@ def parseopts(opts, config=None):
             config['portdir'] = settings["PORTDIR"]
             config['overlay'] = settings["PORTDIR_OVERLAY"]
             config['outputm'] = EBUILDS
+        elif arg in ("-x", "--exclude"):
+            config['exclude'].append(a[1])
         elif arg in ("-o", "--own"):
             config['outputm'] = OWN
             config['outputf'] = a[1]
@@ -314,6 +316,8 @@ def searchdb(config, patterns, db=None):
     """
     regexlist = create_regexlist(config, patterns)
     found = search_list(config, regexlist, db)
+    if config['exclude']:
+        found = filter_excluded(config, found)
     return output_results(config, regexlist, found)
 
 
@@ -380,6 +384,33 @@ def search(config, regex, fullname, db):
         if found:
             data.append(pkg)
     return data
+
+
+def filter_excluded(config, found):
+    """Filters the list of found packages with the --exclude pattern"""
+
+    for pattern in config['exclude']:
+        foo, regex, fullname = create_regex(config, pattern)
+
+        for key in found.keys():
+            data = []
+
+            for pkg in found[key]:
+                excluded = False
+
+                if fullname:
+                    excluded = regex.search(pkg[1])
+                elif config['searchdesc']:
+                    excluded = regex.search(pkg[7])
+                else:
+                    excluded = regex.search(pkg[0])
+
+                if not excluded:
+                    data.append(pkg)
+
+            found[key] = data
+
+    return found
 
 
 def output_results(config, regexlist, found):
@@ -482,9 +513,9 @@ def output_results(config, regexlist, found):
 
 def main():
     try:
-        opts = getopt(sys.argv[1:], "hSFINcveo:d:n",
-            ["help", "searchdesc", "fullname", "instonly", "notinst",
-             "compact", "verbose", "ebuild", "own=", "directory=", "nocolor"
+        opts = getopt(sys.argv[1:], "hSFINcveo:d:x:n",
+            ["help", "searchdesc", "fullname", "instonly", "notinst", "compact",
+             "verbose", "ebuild", "own=", "directory=", "exclude=", "nocolor"
             ])
     except GetoptError as errmsg:
         error(str(errmsg) + " (see " + darkgreen("--help") + " for all options)")
@@ -493,6 +524,8 @@ def main():
     db = loaddb(config)
     regexlist = create_regexlist(config, opts[1])
     found = search_list(config, regexlist, db)
+    if config['exclude']:
+        found = filter_excluded(config, found)
     success = output_results(config, regexlist, found)
 
     # sys.exit() values are opposite T/F
