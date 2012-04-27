@@ -279,22 +279,31 @@ def do_own(pkg, own):
     return own
 
 
-def create_regexp(config, patterns):
+def create_regex(config, pattern):
+    """Creates a regular expression from a pattern string"""
+    # Hacks for people who aren't regular expression gurus
+    if pattern == "*":
+        pattern = ".*"
+    else:
+        pattern = re.sub("\+\+", "\+\+", pattern)
+
+    try:
+        regex = re.compile(pattern, re.IGNORECASE)
+    except re.error:
+        error("Invalid regular expression.", stderr=config['stderr'])
+
+    fullname = (config['fullname'] or '/' in pattern) and not config['searchdesc']
+
+    return pattern, regex, fullname
+
+
+def create_regexlist(config, patterns):
     """Creates a list of regular expressions and other data
     for use in db searches for each pattern in the list of patterns"""
     regexlist = []
-    # Hacks for people who aren't regular expression gurus
     for pattern in patterns:
-        if pattern == "*":
-            pattern = ".*"
-        else:
-            pattern = re.sub("\+\+", "\+\+", pattern)
-        try:
-            regexlist.append([re.compile(pattern, re.IGNORECASE), pattern,
-                "", 0, (config['fullname'] or '/' in pattern)
-                and not config['searchdesc']])
-        except re.error:
-            error("Invalid regular expression.", stderr=config['stderr'])
+        pattern, regex, fullname = create_regex(config, pattern)
+        regexlist.append([regex, pattern, "", 0, fullname])
     return regexlist
 
 
@@ -303,7 +312,7 @@ def searchdb(config, patterns, db=None):
     Now just calls the broken up functions.
     For api compatibility.
     """
-    regexlist = create_regexp(config, patterns)
+    regexlist = create_regexlist(config, patterns)
     found = search_list(config, regexlist, db)
     return output_results(config, regexlist, found)
 
@@ -482,7 +491,7 @@ def main():
 
     config = parseopts(opts)
     db = loaddb(config)
-    regexlist = create_regexp(config, opts[1])
+    regexlist = create_regexlist(config, opts[1])
     found = search_list(config, regexlist, db)
     success = output_results(config, regexlist, found)
 
