@@ -55,6 +55,9 @@ def usage():
     print(darkgreen("  --notinst") + ", " + darkgreen("-N"))
     print("    Find only packages which are not installed")
     print("")
+    print(darkgreen("  --exclude=") + "xpattern" + ", " + darkgreen("-x"), "xpattern")
+    print("    Exclude packages matching xpattern from search result")
+    print("")
     print(darkgreen("  --compact") + ", " + darkgreen("-c"))
     print("    More compact output format")
     print("")
@@ -143,6 +146,8 @@ def parseopts(opts, config=None):
             config['portdir'] = settings["PORTDIR"]
             config['overlay'] = settings["PORTDIR_OVERLAY"]
             config['outputm'] = EBUILDS
+        elif arg in ("-x", "--exclude"):
+            config['exclude'].append(a[1])
         elif arg in ("-o", "--own"):
             config['outputm'] = OWN
             config['outputf'] = a[1]
@@ -279,22 +284,31 @@ def do_own(pkg, own):
     return own
 
 
-def create_regexp(config, patterns):
+def create_regex(config, pattern):
+    """Creates a regular expression from a pattern string"""
+    # Hacks for people who aren't regular expression gurus
+    if pattern == "*":
+        pattern = ".*"
+    else:
+        pattern = re.sub("\+\+", "\+\+", pattern)
+
+    try:
+        regex = re.compile(pattern, re.IGNORECASE)
+    except re.error:
+        error("Invalid regular expression.", stderr=config['stderr'])
+
+    fullname = (config['fullname'] or '/' in pattern) and not config['searchdesc']
+
+    return pattern, regex, fullname
+
+
+def create_regexlist(config, patterns):
     """Creates a list of regular expressions and other data
     for use in db searches for each pattern in the list of patterns"""
     regexlist = []
-    # Hacks for people who aren't regular expression gurus
     for pattern in patterns:
-        if pattern == "*":
-            pattern = ".*"
-        else:
-            pattern = re.sub("\+\+", "\+\+", pattern)
-        try:
-            regexlist.append([re.compile(pattern, re.IGNORECASE), pattern,
-                "", 0, (config['fullname'] or '/' in pattern)
-                and not config['searchdesc']])
-        except re.error:
-            error("Invalid regular expression.", stderr=config['stderr'])
+        pattern, regex, fullname = create_regex(config, pattern)
+        regexlist.append([regex, pattern, "", 0, fullname])
     return regexlist
 
 
@@ -303,8 +317,10 @@ def searchdb(config, patterns, db=None):
     Now just calls the broken up functions.
     For api compatibility.
     """
-    regexlist = create_regexp(config, patterns)
+    regexlist = create_regexlist(config, patterns)
     found = search_list(config, regexlist, db)
+    if config['exclude']:
+        found = filter_excluded(config, found)
     return output_results(config, regexlist, found)
 
 
@@ -371,6 +387,29 @@ def search(config, regex, fullname, db):
         if found:
             data.append(pkg)
     return data
+
+
+def is_excluded(config, regex, fullname, pkg):
+    """Checks if pkg matches the given exclude regex"""
+
+    if fullname:
+        return regex.search(pkg[1])
+    elif config['searchdesc']:
+        return regex.search(pkg[7])
+    else:
+        return regex.search(pkg[0])
+
+
+def filter_excluded(config, found):
+    """Filters the list of found packages with the --exclude pattern"""
+
+    for pattern in config['exclude']:
+        foo, regex, fullname = create_regex(config, pattern)
+
+        for key in found.keys():
+            found[key] = list(filter((lambda pkg: not is_excluded(config, regex, fullname, pkg)), found[key]))
+
+    return found
 
 
 def output_results(config, regexlist, found):
@@ -473,17 +512,19 @@ def output_results(config, regexlist, found):
 
 def main():
     try:
-        opts = getopt(sys.argv[1:], "hSFINcveo:d:n",
-            ["help", "searchdesc", "fullname", "instonly", "notinst",
-             "compact", "verbose", "ebuild", "own=", "directory=", "nocolor"
+        opts = getopt(sys.argv[1:], "hSFINcveo:d:x:n",
+            ["help", "searchdesc", "fullname", "instonly", "notinst", "compact",
+             "verbose", "ebuild", "own=", "directory=", "exclude=", "nocolor"
             ])
     except GetoptError as errmsg:
         error(str(errmsg) + " (see " + darkgreen("--help") + " for all options)")
 
     config = parseopts(opts)
     db = loaddb(config)
-    regexlist = create_regexp(config, opts[1])
+    regexlist = create_regexlist(config, opts[1])
     found = search_list(config, regexlist, db)
+    if config['exclude']:
+        found = filter_excluded(config, found)
     success = output_results(config, regexlist, found)
 
     # sys.exit() values are opposite T/F
