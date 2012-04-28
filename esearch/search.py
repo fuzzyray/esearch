@@ -389,6 +389,17 @@ def search(config, regex, fullname, db):
     return data
 
 
+def is_excluded(config, regex, fullname, pkg):
+    """Checks if pkg matches the given exclude regex"""
+
+    if fullname:
+        return regex.search(pkg[1])
+    elif config['searchdesc']:
+        return regex.search(pkg[7])
+    else:
+        return regex.search(pkg[0])
+
+
 def filter_excluded(config, found):
     """Filters the list of found packages with the --exclude pattern"""
 
@@ -396,22 +407,7 @@ def filter_excluded(config, found):
         foo, regex, fullname = create_regex(config, pattern)
 
         for key in found.keys():
-            data = []
-
-            for pkg in found[key]:
-                excluded = False
-
-                if fullname:
-                    excluded = regex.search(pkg[1])
-                elif config['searchdesc']:
-                    excluded = regex.search(pkg[7])
-                else:
-                    excluded = regex.search(pkg[0])
-
-                if not excluded:
-                    data.append(pkg)
-
-            found[key] = data
+            found[key] = list(filter((lambda pkg: not is_excluded(config, regex, fullname, pkg)), found[key]))
 
     return found
 
