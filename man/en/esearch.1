@@ -29,6 +29,14 @@ Find only packages which are installed
 .B \-\-notinst, \-N
 Find only packages which are NOT installed
 .TP
+.B \-\-exclude=xpattern, \-x xpattern
+Exclude packages matching
+.B xpattern
+from search results. Can be used multiple times, each package matching matching
+at least one of the
+.B xpatterns
+will be excluded.
+.TP
 .B \-\-compact, \-c
 More compact output format
 .TP
