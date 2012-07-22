@@ -13,10 +13,12 @@ start = time()
 
 import os
 import sys
-from os import stat, unlink, environ, open, fdopen, O_EXCL, O_CREAT, O_WRONLY
+from os import stat, unlink, environ, open, O_EXCL, O_CREAT, O_WRONLY
 from os.path import exists
 from shutil import copyfile
 from getopt import getopt, GetoptError
+
+import io
 
 #sys.path.insert(0, "/usr/lib/portage/pym")
 # commented out so it can run from the git checkout
@@ -36,6 +38,13 @@ from esearch.common import version, CONFIG, pkg_version, error
 
 
 VARTREE = portage.vartree()
+
+
+if sys.hexversion >= 0x3000000:
+    _unicode = str
+else:
+    _unicode = unicode
+
 
 def usage():
     print("eupdatedb (%s) - Update the search-index for esearch" % version)
@@ -133,7 +142,7 @@ def updatedb(config=None):
 
     if exists(config['tmpfile']):
         error("there is probably another eupdatedb running already.\n" +
-            "         If you're sure there is no other process, remove",
+            "         If you're sure there is no other process, remove " +
             config['tmpfile'], fatal=False)
         return False
     try:
@@ -141,9 +150,15 @@ def updatedb(config=None):
     except OSError:
         error("Failed to open temporary file.", fatal=False)
         return False
-    dbfile = fdopen(dbfd, "w")
-    dbfile.write("dbversion = " + str(config['needdbversion']) + "\n")
-    dbfile.write("db = (\n")
+
+
+    dbfile = io.open(dbfd, mode="w", encoding="utf_8")
+    dbfile.write(_unicode("# -*- coding: UTF8 -*-\n"))
+
+    dbfile.write(_unicode("dbversion = ") +
+        _unicode(config['needdbversion']) +
+        _unicode("\n"))
+    dbfile.write(_unicode("db = (\n"))
 
     if not config['verbose']:
         config['stdout'].write(green(" * ") + "indexing: ")
@@ -196,17 +211,18 @@ def updatedb(config=None):
 
             installed = pkg_version(VARTREE.dep_bestmatch(pkg))
             if installed:
+                installed = "\'%s\'" % installed
+            else:
                 installed = str(installed)
 
-            dbfile.write(repr((str(pkgname),
-                            str(pkg),
-                            masked,
-                            str(pkg_version(pkgv)),
-                            installed,
-                            str(filesize),
-                            str(homepage),
-                            str(description),
-                            str(_license))) + str(",\n"))
+            dbfile.write(
+                _unicode(
+                    "(\'%s\', \'%s\', %s" %(pkgname, pkg, str(masked)) +
+                    ", \'%s\', %s" % (pkg_version(pkgv), installed) +
+                    ", \'%s\', \'%s\', \'%s\', \'%s\'"
+                    % (filesize, homepage, description.replace("'", "\\'"),
+                        _license) + "),\n"))
+
     except KeyboardInterrupt:
         dbfile.close()
         unlink(config['tmpfile'])
@@ -215,7 +231,7 @@ def updatedb(config=None):
 
     print("", file=config['stdout'])
 
-    dbfile.write(")")
+    dbfile.write(_unicode(")"))
     dbfile.close()
 
     copyfile(config['tmpfile'],
