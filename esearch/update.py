@@ -261,8 +261,8 @@ def main():
         opts = getopt(sys.argv[1:], "hvqd:n",
             ["help", "verbose", "quiet", "directory=", "nocolor"]
             )
-    except GetoptError as error:
-        error(error + "(see" + darkgreen("--help") +
+    except GetoptError as errmsg:
+        error(str(errmsg) + "(see" + darkgreen("--help") +
             "for all options)" + '\n')
     config = parseopts(opts)
     success = updatedb(config)

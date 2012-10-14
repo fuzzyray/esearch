@@ -297,8 +297,9 @@ def main():
             ["help", "webrsync", "delta-webrsync", "layman-sync",
             "nocolor", "verbose", "metadata", "nospinner",
             "quiet"])
-    except GetoptError as error:
-        error(str(error) + " (see" + darkgreen("--help") + " for all options)")
+    except GetoptError as errmsg:
+        error(str(errmsg) + "(see" + darkgreen("--help") +
+            "for all options)" + '\n')
     config = parseopts(opts)
     success = sync(config)
     # sys.exit() values are opposite T/F

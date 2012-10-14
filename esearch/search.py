@@ -519,8 +519,8 @@ def main():
              "verbose", "ebuild", "own=", "directory=", "exclude=", "nocolor"
             ])
     except GetoptError as errmsg:
-        error(str(errmsg) + " (see " + darkgreen("--help") + " for all options)")
-
+        error(str(errmsg) + "(see" + darkgreen("--help") +
+            "for all options)" + '\n')
     config = parseopts(opts)
     db = loaddb(config)
     regexlist = create_regexlist(config, opts[1])
