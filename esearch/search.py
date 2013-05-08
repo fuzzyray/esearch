@@ -22,6 +22,7 @@ import re
 try:
     from portage.output import bold, red, green, darkgreen, turquoise, blue, nocolor
     from portage import settings, pkgcmp, pkgsplit, portdb, best
+    from portage.util import cmp_sort_key
 except ImportError:
     print("Critical: portage imports failed!")
     sys.exit(1)
@@ -107,7 +108,7 @@ def searchEbuilds(path, portdir=True, searchdef="", repo_num="",
                     data['defebuild'] = (searchdef, pkgs[-1][3])
         if not portdir:
             config['found_in_overlay'] = True
-        pkgs.sort(mypkgcmp)
+        pkgs.sort(key=cmp_sort_key(mypkgcmp))
         for pkg in pkgs:
             rev = ""
             if pkg[2] != "r0":
