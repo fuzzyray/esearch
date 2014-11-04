@@ -382,13 +382,16 @@ def search(config, regex, fullname, db):
 
         if fullname:
             found = regex.search(pkg[1])
-        elif config['searchdesc']:
-            found = regex.search(pkg[7])
         else:
             found = regex.search(pkg[0])
-
         if found:
             data.append(pkg)
+        else:
+            if config['searchdesc']:
+                found = regex.search(pkg[7])
+                if found:
+                    data.append(pkg)
+
     return data
 
 
