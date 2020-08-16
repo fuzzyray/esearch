@@ -210,18 +210,10 @@ def updatedb(config=None):
                 lastcat = curcat
 
             installed = pkg_version(VARTREE.dep_bestmatch(pkg))
-            if installed:
-                installed = "\'%s\'" % installed
-            else:
-                installed = str(installed)
 
             dbfile.write(
-                _unicode(
-                    "(\'%s\', \'%s\', %s" %(pkgname, pkg, str(masked)) +
-                    ", \'%s\', %s" % (pkg_version(pkgv), installed) +
-                    ", \'%s\', \'%s\', \'%s\', \'%s\'"
-                    % (filesize, homepage, description.replace("'", "\\'"),
-                        _license) + "),\n"))
+                repr((pkgname, pkg, masked, pkg_version(pkgv), installed,
+                    filesize, homepage, description, _license)) + ",\n")
 
     except KeyboardInterrupt:
         dbfile.close()
